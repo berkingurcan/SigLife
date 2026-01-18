@@ -5,26 +5,13 @@
  * before deploying.
  *
  * Usage:
- *   npx ts-node scripts/calculate-tree-cost.ts
+ *   node scripts/calculate-tree-cost.js
  */
 
-import {
-    ALL_DEPTH_SIZE_PAIRS,
-    getConcurrentMerkleTreeAccountSize
-} from "@solana/spl-account-compression";
-import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
+const { Connection, LAMPORTS_PER_SOL } = require("@solana/web3.js");
+const { getConcurrentMerkleTreeAccountSize, ALL_DEPTH_SIZE_PAIRS } = require("@solana/spl-account-compression");
 
 const RPC_URL = process.env.RPC_URL || "https://api.devnet.solana.com";
-
-interface TreeConfig {
-    maxDepth: number;
-    maxBufferSize: number;
-    capacity: number;
-    canopyDepth: number;
-    accountSize: number;
-    rentCostSOL: number;
-    proofSize: number;
-}
 
 async function calculateAllCosts() {
     console.log("💰 Merkle Tree Cost Calculator\n");
@@ -37,7 +24,7 @@ async function calculateAllCosts() {
 
     console.log(`📊 Calculating costs for proof size: ${desiredProofSize}\n`);
 
-    const configs: TreeConfig[] = [];
+    const configs = [];
 
     for (const pair of ALL_DEPTH_SIZE_PAIRS) {
         const canopyDepth = Math.max(0, pair.maxDepth - desiredProofSize);
@@ -94,13 +81,13 @@ async function calculateAllCosts() {
     console.log("\n" + "=".repeat(80));
     console.log("\n📋 Recommended configurations for SigLife:\n");
 
-    // Find recommended configs
-    const smallConfig = configs.find(c => c.capacity >= 1000 && c.capacity < 5000);
-    const mediumConfig = configs.find(c => c.capacity >= 10000 && c.capacity < 50000);
-    const largeConfig = configs.find(c => c.capacity >= 100000 && c.capacity < 500000);
+    // Find specific configs that are good for different scales
+    const smallConfig = configs.find(c => c.maxDepth === 7 && c.maxBufferSize === 8);
+    const mediumConfig = configs.find(c => c.maxDepth === 14 && c.maxBufferSize === 64);
+    const largeConfig = configs.find(c => c.maxDepth === 17);
 
     if (smallConfig) {
-        console.log("🔹 Small (Testing/MVP):");
+        console.log("🔹 Small (Testing - 128 NFTs):");
         console.log(`   Depth: ${smallConfig.maxDepth}, Buffer: ${smallConfig.maxBufferSize}`);
         console.log(`   Capacity: ${smallConfig.capacity.toLocaleString()} NFTs`);
         console.log(`   Cost: ~${smallConfig.rentCostSOL.toFixed(4)} SOL\n`);
@@ -128,11 +115,7 @@ async function calculateAllCosts() {
 }
 
 // Calculate specific config
-async function calculateSpecificConfig(
-    maxDepth: number,
-    maxBufferSize: number,
-    canopyDepth: number
-) {
+async function calculateSpecificConfig(maxDepth, maxBufferSize, canopyDepth) {
     console.log("\n📊 Specific Configuration Cost\n");
 
     const connection = new Connection(RPC_URL);
@@ -165,9 +148,9 @@ async function main() {
     // Show all options
     await calculateAllCosts();
 
-    // Show recommended config (depth 14, buffer 64, canopy 10)
+    // Show recommended config for SigLife (depth 7, buffer 8 for testing)
     console.log("\n" + "=".repeat(80));
-    await calculateSpecificConfig(14, 64, 10);
+    await calculateSpecificConfig(7, 8, 0);
 }
 
 main().catch(console.error);

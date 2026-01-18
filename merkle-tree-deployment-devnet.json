@@ -1,0 +1,11 @@
+{
+  "merkleTreeAddress": "5PNLh4KVGNxeLT1BDLn2WK4BSMXQdRMTyrS7XSsqnABZ",
+  "treeCreator": "AycUowPWTfWWK1dfia7hBRzJEvtHcCuiAepBLqmc9Jj6",
+  "maxDepth": 5,
+  "maxBufferSize": 8,
+  "capacity": 32,
+  "isPublic": false,
+  "network": "devnet",
+  "deployedAt": "2026-01-18T21:29:42.365Z",
+  "transactionSignature": "zNNBBIpULIVHSQFQEqWlx1b1ozTRsriQT8J5JqvNEiqOzKWRxJO7gQmDtsCCZhyJJPlxQquAxxp1p6/HKfmvDA=="
+}
