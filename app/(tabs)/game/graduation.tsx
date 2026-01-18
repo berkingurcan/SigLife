@@ -1,31 +1,31 @@
 // Graduation Screen - Stage completion and NFT minting
 // Redesigned with modern 2025-2026 UI/UX trends
 
-import React, { useState } from 'react'
-import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
+import { useMobileWallet } from '@wallet-ui/react-native-web3js'
+import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useMobileWallet } from '@wallet-ui/react-native-web3js'
+import React, { useState } from 'react'
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native'
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { useGame } from '@/components/game/game-provider'
+import { GameStageBadge } from '@/components/game/game-stage-badge'
+import { useMintStageNFT } from '@/components/game/use-mint-stage-nft'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { GameStageBadge } from '@/components/game/game-stage-badge'
-import { useGame } from '@/components/game/game-provider'
-import { useMintStageNFT } from '@/components/game/use-mint-stage-nft'
-import { getStageById, getNextStage, MINT_FEE_SOL } from '@/constants/game-config'
-import { Colors, Spacing, BorderRadius, Typography, TabBar, Gradients } from '@/constants/design-system'
 import {
   CelebrationIcon,
-  MintIcon,
   CheckIcon,
+  GraduateIcon,
+  MintIcon,
+  StageIcons,
   TargetIcon,
   TrophyIcon,
-  StageIcons,
-  GraduateIcon,
 } from '@/components/ui/icons'
+import { BorderRadius, Colors, Gradients, Spacing, TabBar, Typography } from '@/constants/design-system'
+import { getNextStage, getStageById } from '@/constants/game-config'
 
 export default function GraduationScreen() {
   const router = useRouter()
@@ -179,10 +179,6 @@ export default function GraduationScreen() {
                 </View>
               </View>
 
-              <View style={styles.feeContainer}>
-                <Animated.Text style={styles.feeLabel}>Mint Fee</Animated.Text>
-                <Animated.Text style={styles.feeValue}>{MINT_FEE_SOL} SOL</Animated.Text>
-              </View>
 
               <Button
                 title={`Mint ${currentStage.name} NFT`}
@@ -406,26 +402,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: Colors.text.secondary,
     marginTop: Spacing.xs,
-  },
-  feeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: Colors.background.primary,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border.subtle,
-  },
-  feeLabel: {
-    fontSize: Typography.fontSize.base,
-    fontFamily: 'Inter-Medium',
-    color: Colors.text.secondary,
-  },
-  feeValue: {
-    fontSize: Typography.fontSize.lg,
-    fontFamily: 'Inter-Bold',
-    color: Colors.primary.default,
   },
   optionalText: {
     fontSize: Typography.fontSize.sm,

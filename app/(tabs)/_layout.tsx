@@ -1,7 +1,6 @@
+import { CustomTabBar } from '@/components/ui/custom-tab-bar'
 import { Tabs } from 'expo-router'
 import React from 'react'
-import { CustomTabBar } from '@/components/ui/custom-tab-bar'
-import { Colors } from '@/constants/design-system'
 
 export default function TabLayout() {
   return (
@@ -21,23 +20,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="account"
-        options={{
-          title: 'Wallet',
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
         }}
       />
-      <Tabs.Screen
-        name="demo"
-        options={{
-          title: 'Demo',
-        }}
-      />
+      {/* Hidden tabs that still need routes but aren't shown */}
+      <Tabs.Screen name="account" options={{ tabBarItemStyle: { display: 'none' }, href: null }} />
+      <Tabs.Screen name="demo" options={{ tabBarItemStyle: { display: 'none' }, href: null }} />
     </Tabs>
   )
 }

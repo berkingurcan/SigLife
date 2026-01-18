@@ -4,6 +4,7 @@
 // TREASURY CONFIGURATION
 // ============================================================================
 export const TREASURY_WALLET = 'CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY'
+export const MINT_FEE_SOL = 0.02 // Mint fee in SOL for NFT minting
 
 // ============================================================================
 // COLOR PALETTE - Dark Sigma Theme
@@ -110,6 +111,7 @@ export interface GameState {
   history: HistoryEntry[]
   mintedStages: StageId[]
   totalMinted: number
+  answeredEventIds: string[]
   createdAt: number
   updatedAt: number
 }
@@ -321,6 +323,7 @@ export function createInitialGameState(): GameState {
     history: [],
     mintedStages: [],
     totalMinted: 0,
+    answeredEventIds: [],
     createdAt: now,
     updatedAt: now,
   }

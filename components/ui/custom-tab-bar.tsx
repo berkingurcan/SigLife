@@ -1,21 +1,20 @@
 // Custom Tab Bar - Modern floating glass morphism design
 // Following 2025-2026 mobile UI trends
 
-import React from 'react'
-import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native'
+import { BorderRadius, Colors, Spacing, TabBar } from '@/constants/design-system'
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { BlurView } from 'expo-blur'
+import * as Haptics from 'expo-haptics'
+import React from 'react'
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
-  withSpring,
-  interpolate,
   useSharedValue,
-  withTiming,
+  withSpring,
+  withTiming
 } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Colors, Spacing, BorderRadius, TabBar, Shadows } from '@/constants/design-system'
-import { GamepadIcon, WalletIcon, SettingsIcon, BugIcon } from './icons'
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
+import { GamepadIcon, SettingsIcon } from './icons'
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
@@ -93,17 +92,13 @@ function TabItem({ route, label, isFocused, onPress, onLongPress, Icon }: TabIte
 // Map route names to icons
 const routeIcons: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   game: GamepadIcon,
-  account: WalletIcon,
   settings: SettingsIcon,
-  demo: BugIcon,
 }
 
 // Map route names to labels
 const routeLabels: Record<string, string> = {
   game: 'Game',
-  account: 'Wallet',
   settings: 'Settings',
-  demo: 'Demo',
 }
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {

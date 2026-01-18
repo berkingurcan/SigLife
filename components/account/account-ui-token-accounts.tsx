@@ -1,10 +1,10 @@
-import { PublicKey } from '@solana/web3.js'
-import { AppText } from '@/components/app-text'
-import { ActivityIndicator, View } from 'react-native'
-import { AppView } from '@/components/app-view'
-import { ellipsify } from '@/utils/ellipsify'
 import { AccountUiTokenBalance } from '@/components/account/account-ui-token-balance'
 import { useGetTokenAccounts } from '@/components/account/use-get-token-accounts'
+import { AppText } from '@/components/app-text'
+import { AppView } from '@/components/app-view'
+import { ellipsify } from '@/utils/ellipsify'
+import { PublicKey } from '@solana/web3.js'
+import { ActivityIndicator, View } from 'react-native'
 
 export function AccountUiTokenAccounts({ address }: { address: PublicKey }) {
   let query = useGetTokenAccounts({ address })
@@ -32,23 +32,25 @@ export function AccountUiTokenAccounts({ address }: { address: PublicKey }) {
             </View>
           )}
 
-          {items.map((item) => (
-            <AppView
-              key={item.pubkey.toString()}
-              style={{
-                flexDirection: 'row',
-                padding: 8,
-                borderBottomWidth: 1,
-                borderBottomColor: '#ddd',
-              }}
-            >
-              <AppText style={{ flex: 1 }}>{ellipsify(item.pubkey.toString())}</AppText>
-              <AppText style={{ flex: 1 }}>{ellipsify(item.account.data.parsed.info.mint)}</AppText>
-              <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <AccountUiTokenBalance address={item.pubkey} />
-              </View>
-            </AppView>
-          ))}
+          {items
+            .filter((item) => item.pubkey && item.account?.data?.parsed?.info?.mint)
+            .map((item) => (
+              <AppView
+                key={item.pubkey.toString()}
+                style={{
+                  flexDirection: 'row',
+                  padding: 8,
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#ddd',
+                }}
+              >
+                <AppText style={{ flex: 1 }}>{ellipsify(item.pubkey.toString())}</AppText>
+                <AppText style={{ flex: 1 }}>{ellipsify(item.account.data.parsed.info.mint)}</AppText>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <AccountUiTokenBalance address={item.pubkey} />
+                </View>
+              </AppView>
+            ))}
         </View>
       )}
     </>

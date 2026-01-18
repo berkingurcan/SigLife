@@ -117,6 +117,106 @@ const STUDENT_EVENTS: GameEvent[] = [
       },
     ],
   },
+  {
+    id: 'student_6',
+    stage: 'student',
+    title: 'Online Course',
+    description: 'You found an online course that could boost your skills. It costs money and time.',
+    choices: [
+      {
+        id: 'enroll_course',
+        text: 'Enroll and commit to finishing it',
+        effects: { intelligence: 7, discipline: 5, money: -3 },
+        outcome: 'Gained valuable new skills.',
+      },
+      {
+        id: 'free_youtube',
+        text: 'Learn from free YouTube tutorials instead',
+        effects: { intelligence: 4, discipline: 2 },
+        outcome: 'Self-taught with mixed results.',
+      },
+    ],
+  },
+  {
+    id: 'student_7',
+    stage: 'student',
+    title: 'Study Group',
+    description: 'Some classmates invite you to join their study group.',
+    choices: [
+      {
+        id: 'join_group',
+        text: 'Join and contribute regularly',
+        effects: { intelligence: 5, charisma: 6, discipline: 3 },
+        outcome: 'Made friends and improved academically.',
+      },
+      {
+        id: 'solo_study',
+        text: 'Prefer to study alone',
+        effects: { intelligence: 6, discipline: 4, charisma: -2 },
+        outcome: 'Focused study but missed social connections.',
+      },
+    ],
+  },
+  {
+    id: 'student_8',
+    stage: 'student',
+    title: 'Campus Club',
+    description: 'A tech club on campus is recruiting new members.',
+    choices: [
+      {
+        id: 'join_club',
+        text: 'Join and take on leadership role',
+        effects: { charisma: 8, intelligence: 4, discipline: 3 },
+        outcome: 'Developed leadership and networking skills.',
+      },
+      {
+        id: 'skip_club',
+        text: 'Too busy, maybe next semester',
+        effects: { discipline: 3, intelligence: 2 },
+        outcome: 'Stayed focused on academics.',
+      },
+    ],
+  },
+  {
+    id: 'student_9',
+    stage: 'student',
+    title: 'Morning Routine',
+    description: "Your sleep schedule is a mess. Time to make a change?",
+    choices: [
+      {
+        id: 'wake_early',
+        text: 'Start waking up at 6 AM consistently',
+        effects: { discipline: 8, fitness: 5, intelligence: 3 },
+        outcome: 'Became a morning person with more productive days.',
+      },
+      {
+        id: 'night_owl',
+        text: 'Embrace being a night owl',
+        effects: { intelligence: 4, discipline: -2, charisma: 2 },
+        outcome: 'Creative at night but irregular schedule.',
+      },
+    ],
+  },
+  {
+    id: 'student_10',
+    stage: 'student',
+    title: 'Internship Application',
+    description: 'A great summer internship opportunity just opened up.',
+    choices: [
+      {
+        id: 'apply_intern',
+        text: 'Apply and prepare intensively',
+        effects: { intelligence: 5, discipline: 6, charisma: 4 },
+        outcome: 'Got interview experience and learned valuable skills.',
+      },
+      {
+        id: 'summer_break',
+        text: 'Take the summer off to relax',
+        effects: { fitness: 5, charisma: 3, discipline: -3 },
+        outcome: 'Recharged but missed an opportunity.',
+      },
+    ],
+  },
 ]
 
 // ============================================================================
@@ -773,9 +873,16 @@ export function getEventsForStage(stageId: StageId): GameEvent[] {
   return ALL_EVENTS.filter((event) => event.stage === stageId)
 }
 
-export function getRandomEvent(stageId: StageId): GameEvent | null {
+export function getRandomEvent(stageId: StageId, answeredEventIds: string[] = []): GameEvent | null {
   const stageEvents = getEventsForStage(stageId)
   if (stageEvents.length === 0) return null
-  const randomIndex = Math.floor(Math.random() * stageEvents.length)
-  return stageEvents[randomIndex]
+
+  // Filter out already answered events
+  const unansweredEvents = stageEvents.filter((event) => !answeredEventIds.includes(event.id))
+
+  // If all events answered, reset and pick from all
+  const availableEvents = unansweredEvents.length > 0 ? unansweredEvents : stageEvents
+
+  const randomIndex = Math.floor(Math.random() * availableEvents.length)
+  return availableEvents[randomIndex]
 }

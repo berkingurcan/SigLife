@@ -1,15 +1,15 @@
 // Game Provider - State management for Sigma Man game
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react'
-import type { GameState, StageId, Stats, HistoryEntry, GameEvent, EventChoice } from '@/constants/game-config'
+import type { EventChoice, GameEvent, GameState, HistoryEntry, StageId } from '@/constants/game-config'
 import {
-  createInitialGameState,
   applyStatChanges,
   canAdvanceToNextStage,
+  createInitialGameState,
   getNextStage,
   getStageById,
 } from '@/constants/game-config'
 import { getRandomEvent } from '@/constants/game-events'
-import { saveGameState, loadOrCreateGameState, deleteGameState } from '@/utils/game-storage'
+import { deleteGameState, loadOrCreateGameState, saveGameState } from '@/utils/game-storage'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 // ============================================================================
 // TYPES
@@ -83,7 +83,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // Trigger a random event for the current stage
   const triggerRandomEvent = useCallback(() => {
     if (!gameState) return
-    const event = getRandomEvent(gameState.currentStage)
+    const event = getRandomEvent(gameState.currentStage, gameState.answeredEventIds)
     setCurrentEvent(event)
   }, [gameState])
 
@@ -107,6 +107,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ...gameState,
         stats: newStats,
         history: [...gameState.history, historyEntry],
+        answeredEventIds: [...gameState.answeredEventIds, currentEvent.id],
         updatedAt: Date.now(),
       }
 

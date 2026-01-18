@@ -28,12 +28,17 @@ export async function createTransaction({
     value: latestBlockhash,
   } = await connection.getLatestBlockhashAndContext()
 
+  // Validate amount is a valid number
+  if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
+    throw new Error(`Invalid amount: ${amount}. Must be a positive number.`)
+  }
+
   // Create instructions to send, in this case a simple transfer
   const instructions = [
     SystemProgram.transfer({
       fromPubkey: publicKey,
       toPubkey: destination,
-      lamports: amount * LAMPORTS_PER_SOL,
+      lamports: Math.floor(amount * LAMPORTS_PER_SOL),
     }),
   ]
 
