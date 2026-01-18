@@ -3,8 +3,7 @@
 // ============================================================================
 // TREASURY CONFIGURATION
 // ============================================================================
-export const TREASURY_WALLET = 'CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY' // TODO: Replace with actual treasury address
-export const MINT_FEE_SOL = 0.02 // Fee per stage NFT mint
+export const TREASURY_WALLET = 'CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY'
 
 // ============================================================================
 // COLOR PALETTE - Dark Sigma Theme

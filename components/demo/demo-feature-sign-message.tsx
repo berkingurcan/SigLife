@@ -1,13 +1,16 @@
-import { AppView } from '@/components/app-view'
-import { AppText } from '@/components/app-text'
+// Demo Feature Sign Message - Message signing test
+// Redesigned with modern 2025-2026 UI/UX trends
+
 import { PublicKey } from '@solana/web3.js'
-import Snackbar from 'react-native-snackbar'
-import { ActivityIndicator, TextInput, View } from 'react-native'
-import React, { useState } from 'react'
-import { Button } from '@react-navigation/elements'
-import { useThemeColor } from '@/hooks/use-theme-color'
 import { useMutation } from '@tanstack/react-query'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
+import React, { useState } from 'react'
+import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import Snackbar from 'react-native-snackbar'
+
+import { Button } from '@/components/ui/button'
+import { BorderRadius, Colors, Spacing, Typography } from '@/constants/design-system'
 import { ellipsify } from '@/utils/ellipsify'
 
 function useSignMessage({ address }: { address: PublicKey }) {
@@ -22,52 +25,113 @@ function useSignMessage({ address }: { address: PublicKey }) {
 export function DemoFeatureSignMessage({ address }: { address: PublicKey }) {
   const signMessage = useSignMessage({ address })
   const [message, setMessage] = useState('Hello world')
-  const backgroundColor = useThemeColor({ light: '#f0f0f0', dark: '#333333' }, 'background')
-  const textColor = useThemeColor({ light: '#000000', dark: '#ffffff' }, 'text')
+
+  const handleSignMessage = () => {
+    signMessage
+      .mutateAsync({ message })
+      .then(() => {
+        console.log(`Signed message: ${message} with ${address.toString()}`)
+        Snackbar.show({
+          text: `Signed message with ${ellipsify(address.toString(), 8)}`,
+          duration: Snackbar.LENGTH_SHORT,
+        })
+      })
+      .catch((err) => console.log(`Error signing message: ${err}`, err))
+  }
 
   return (
-    <AppView>
-      <AppText type="subtitle">Sign message with connected wallet.</AppText>
+    <View style={styles.container}>
+      <Animated.Text style={styles.description}>
+        Sign a message with your connected wallet to verify ownership.
+      </Animated.Text>
 
-      <View style={{ gap: 16 }}>
-        <AppText>Message</AppText>
+      <View style={styles.inputContainer}>
+        <Animated.Text style={styles.inputLabel}>Message</Animated.Text>
         <TextInput
-          style={{
-            backgroundColor,
-            color: textColor,
-            borderWidth: 1,
-            borderRadius: 25,
-            paddingHorizontal: 16,
-          }}
+          style={styles.textInput}
           value={message}
           onChangeText={setMessage}
+          placeholder="Enter message to sign..."
+          placeholderTextColor={Colors.text.muted}
+          selectionColor={Colors.primary.default}
         />
-        {signMessage.isPending ? (
-          <ActivityIndicator />
-        ) : (
-          <Button
-            disabled={signMessage.isPending || message?.trim() === ''}
-            onPress={() => {
-              signMessage
-                .mutateAsync({ message })
-                .then(() => {
-                  console.log(`Signed message: ${message} with ${address.toString()}`)
-                  Snackbar.show({
-                    text: `Signed message with ${ellipsify(address.toString(), 8)}`,
-                    duration: Snackbar.LENGTH_SHORT,
-                  })
-                })
-                .catch((err) => console.log(`Error signing message: ${err}`, err))
-            }}
-            variant="filled"
-          >
-            Sign Message
-          </Button>
-        )}
       </View>
-      {signMessage.isError ? (
-        <AppText style={{ color: 'red', fontSize: 12 }}>{`${signMessage.error.message}`}</AppText>
-      ) : null}
-    </AppView>
+
+      {signMessage.isPending ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color={Colors.primary.default} />
+          <Animated.Text style={styles.loadingText}>Signing...</Animated.Text>
+        </View>
+      ) : (
+        <Button
+          title="Sign Message"
+          onPress={handleSignMessage}
+          variant="primary"
+          size="lg"
+          disabled={signMessage.isPending || message?.trim() === ''}
+        />
+      )}
+
+      {signMessage.isError && (
+        <View style={styles.errorContainer}>
+          <Animated.Text style={styles.errorText}>
+            {signMessage.error.message}
+          </Animated.Text>
+        </View>
+      )}
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    gap: Spacing.md,
+  },
+  description: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+    lineHeight: Typography.fontSize.sm * Typography.lineHeight.relaxed,
+  },
+  inputContainer: {
+    gap: Spacing.sm,
+  },
+  inputLabel: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
+  },
+  textInput: {
+    backgroundColor: Colors.surface.elevated,
+    borderWidth: 1,
+    borderColor: Colors.border.default,
+    borderRadius: BorderRadius.base,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.primary,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    padding: Spacing.md,
+  },
+  loadingText: {
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
+  },
+  errorContainer: {
+    backgroundColor: Colors.danger.muted,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+  },
+  errorText: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.danger.default,
+  },
+})

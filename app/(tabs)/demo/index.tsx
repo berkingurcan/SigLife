@@ -1,11 +1,9 @@
-import React from 'react'
-import { AppPage } from '@/components/app-page'
+// Demo Screen - Developer Tools
+// Redirects to DemoFeature component
+
 import { DemoFeature } from '@/components/demo/demo-feature'
+import React from 'react'
 
 export default function TabsDemoScreen() {
-  return (
-    <AppPage>
-      <DemoFeature />
-    </AppPage>
-  )
+  return <DemoFeature />
 }
