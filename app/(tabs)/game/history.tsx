@@ -1,29 +1,23 @@
 // History Screen - Journey log showing all past events
 // Redesigned with modern 2025-2026 UI/UX trends
 
-import React from 'react'
-import { View, StyleSheet, FlatList, Platform } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRouter } from 'expo-router'
+import React from 'react'
+import { FlatList, StyleSheet, View } from 'react-native'
+import Animated, { FadeIn, FadeInDown, SlideInRight } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Animated, { FadeIn, FadeInDown, FadeInRight, SlideInRight } from 'react-native-reanimated'
-import * as Haptics from 'expo-haptics'
 
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { useGame } from '@/components/game/game-provider'
-import { type HistoryEntry } from '@/constants/game-config'
-import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
+import { Card } from '@/components/ui/card'
 import {
-  PlayIcon,
   GraduateIcon,
-  MintIcon,
   HistoryIcon,
-  ResetIcon,
-  StatIcons,
-  ArrowUpIcon,
-  ArrowDownIcon,
+  MintIcon,
+  PlayIcon,
+  StatIcons
 } from '@/components/ui/icons'
+import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
+import { type HistoryEntry } from '@/constants/game-config'
 
 function HistoryItem({ entry, index }: { entry: HistoryEntry; index: number }) {
   const typeConfig = {
@@ -109,9 +103,8 @@ function HistoryItem({ entry, index }: { entry: HistoryEntry; index: number }) {
 }
 
 export default function HistoryScreen() {
-  const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { gameState, resetGame } = useGame()
+  const { gameState } = useGame()
 
   if (!gameState) {
     return (
@@ -129,14 +122,6 @@ export default function HistoryScreen() {
 
   const reversedHistory = [...gameState.history].reverse()
   const journeyDays = Math.floor((Date.now() - gameState.createdAt) / (1000 * 60 * 60 * 24))
-
-  const handleResetGame = () => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-    }
-    resetGame()
-    router.back()
-  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -183,7 +168,7 @@ export default function HistoryScreen() {
           renderItem={({ item, index }) => <HistoryItem entry={item} index={index} />}
           contentContainerStyle={[
             styles.listContent,
-            { paddingBottom: TabBar.height + Spacing['3xl'] },
+            { paddingBottom: TabBar.height + Spacing.lg },
           ]}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -203,20 +188,6 @@ export default function HistoryScreen() {
           </Animated.Text>
         </View>
       )}
-
-      {/* Reset Button */}
-      <Animated.View
-        entering={FadeInDown.delay(300)}
-        style={[styles.resetContainer, { paddingBottom: TabBar.height + Spacing.lg }]}
-      >
-        <Button
-          title="Start New Game"
-          onPress={handleResetGame}
-          variant="danger"
-          size="lg"
-          icon={<ResetIcon size={20} color={Colors.text.primary} />}
-        />
-      </Animated.View>
     </View>
   )
 }

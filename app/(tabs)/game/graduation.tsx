@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useGame } from '@/components/game/game-provider'
 import { GameStageBadge } from '@/components/game/game-stage-badge'
+import { NftMintedModal } from '@/components/game/nft-minted-modal'
 import { useMintStageNFT } from '@/components/game/use-mint-stage-nft'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -33,6 +34,7 @@ export default function GraduationScreen() {
   const { account } = useMobileWallet()
   const { gameState, canGraduate, advanceStage, recordMint } = useGame()
   const [hasMinted, setHasMinted] = useState(false)
+  const [showMintedModal, setShowMintedModal] = useState(false)
 
   const mintMutation = useMintStageNFT({
     address: account?.publicKey ?? null!,
@@ -77,9 +79,7 @@ export default function GraduationScreen() {
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         }
-        Alert.alert('NFT Minted', `Your ${currentStage.name} achievement NFT has been minted!`, [
-          { text: 'Continue' },
-        ])
+        setShowMintedModal(true)
       }
     } catch (error) {
       // Check if user cancelled - don't show error in this case
@@ -186,7 +186,7 @@ export default function GraduationScreen() {
                 <View style={styles.mintTitleContainer}>
                   <Animated.Text style={styles.mintTitle}>Mint Your Achievement</Animated.Text>
                   <Animated.Text style={styles.mintSubtitle}>
-                    Commemorate on Solana blockchain
+                    Required to advance to next stage
                   </Animated.Text>
                 </View>
               </View>
@@ -202,8 +202,8 @@ export default function GraduationScreen() {
                 icon={<MintIcon size={20} color={Colors.text.primary} />}
               />
 
-              <Animated.Text style={styles.optionalText}>
-                Minting is optional - you can still advance without it.
+              <Animated.Text style={styles.requiredText}>
+                You must mint the NFT before advancing to the next stage.
               </Animated.Text>
             </Card>
           </Animated.View>
@@ -273,13 +273,21 @@ export default function GraduationScreen() {
         {/* Actions */}
         <Animated.View entering={FadeInUp.delay(700)} style={styles.actionsSection}>
           {nextStage ? (
-            <Button
-              title={`Advance to ${nextStage.name}`}
-              onPress={handleAdvance}
-              variant="success"
-              size="xl"
-              icon={<GraduateIcon size={22} color={Colors.text.primary} />}
-            />
+            <>
+              <Button
+                title={`Advance to ${nextStage.name}`}
+                onPress={handleAdvance}
+                variant="success"
+                size="xl"
+                icon={<GraduateIcon size={22} color={Colors.text.primary} />}
+                disabled={!(alreadyMinted || hasMinted)}
+              />
+              {!(alreadyMinted || hasMinted) && (
+                <Animated.Text style={styles.mintRequirementHint}>
+                  Mint the NFT above to unlock advancement
+                </Animated.Text>
+              )}
+            </>
           ) : null}
 
           <Button
@@ -290,6 +298,14 @@ export default function GraduationScreen() {
           />
         </Animated.View>
       </ScrollView>
+
+      {/* NFT Minted Success Modal */}
+      <NftMintedModal
+        visible={showMintedModal}
+        onClose={() => setShowMintedModal(false)}
+        stageName={currentStage.name}
+        stageId={currentStage.id}
+      />
     </View>
   )
 }
@@ -420,6 +436,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: Colors.text.tertiary,
     textAlign: 'center',
+  },
+  requiredText: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Medium',
+    color: Colors.warning.default,
+    textAlign: 'center',
+  },
+  mintRequirementHint: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: -Spacing.sm,
   },
   mintedContent: {
     flexDirection: 'row',

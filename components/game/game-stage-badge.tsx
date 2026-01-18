@@ -1,18 +1,18 @@
 // Game Stage Badge - Modern stage indicator component
 // Redesigned with 2025-2026 UI trends
 
-import React from 'react'
-import { View, StyleSheet, Platform } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import React from 'react'
+import { Platform, StyleSheet, View } from 'react-native'
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated'
 
-import { STAGES, type StageId } from '@/constants/game-config'
-import { Colors, Spacing, BorderRadius, Typography, Gradients } from '@/constants/design-system'
 import { StageIcons } from '@/components/ui/icons'
+import { BorderRadius, Colors, Gradients, Spacing, Typography } from '@/constants/design-system'
+import { STAGES, type StageId } from '@/constants/game-config'
 
 interface GameStageBadgeProps {
   stageId: StageId
-  size?: 'small' | 'medium' | 'large'
+  size?: 'compact' | 'small' | 'medium' | 'large'
   showProgress?: boolean
 }
 
@@ -26,12 +26,21 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
   const gradientColors = Gradients.stage[stageId] || Gradients.primary.colors
 
   const sizeConfig = {
+    compact: {
+      containerPadding: Spacing.sm,
+      iconSize: 24,
+      iconContainerSize: 40,
+      nameSize: Typography.fontSize.base,
+      progressSize: Typography.fontSize.xs,
+      horizontal: true,
+    },
     small: {
       containerPadding: Spacing.md,
       iconSize: 28,
       iconContainerSize: 48,
       nameSize: Typography.fontSize.sm,
       progressSize: Typography.fontSize.xs,
+      horizontal: false,
     },
     medium: {
       containerPadding: Spacing.lg,
@@ -39,6 +48,7 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
       iconContainerSize: 72,
       nameSize: Typography.fontSize.lg,
       progressSize: Typography.fontSize.sm,
+      horizontal: false,
     },
     large: {
       containerPadding: Spacing.xl,
@@ -46,11 +56,80 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
       iconContainerSize: 96,
       nameSize: Typography.fontSize['2xl'],
       progressSize: Typography.fontSize.base,
+      horizontal: false,
     },
   }
 
+  const isCompact = size === 'compact'
+
   const config = sizeConfig[size]
 
+  // Compact horizontal layout
+  if (isCompact) {
+    return (
+      <Animated.View entering={ZoomIn.springify()}>
+        <View style={[styles.compactContainer, { padding: config.containerPadding }]}>
+          <LinearGradient
+            colors={[Colors.glass.border, 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.compactBorderGradient}
+          />
+          <View style={styles.glassBackground} />
+
+          <View style={styles.compactContent}>
+            {/* Icon */}
+            <View
+              style={[
+                styles.iconContainer,
+                styles.compactIcon,
+                {
+                  width: config.iconContainerSize,
+                  height: config.iconContainerSize,
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={gradientColors}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              />
+              <IconComponent size={config.iconSize} color={Colors.text.primary} />
+            </View>
+
+            {/* Stage Info */}
+            <View style={styles.compactInfo}>
+              <Animated.Text style={[styles.stageName, { fontSize: config.nameSize }]}>
+                {stage.name}
+              </Animated.Text>
+              {showProgress && (
+                <View style={styles.compactProgress}>
+                  <View style={styles.progressDots}>
+                    {STAGES.map((_, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.progressDot,
+                          index < stageNumber && styles.progressDotActive,
+                          index === stage.index && styles.progressDotCurrent,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                  <Animated.Text style={[styles.progressText, { fontSize: config.progressSize }]}>
+                    {stageNumber}/{totalStages}
+                  </Animated.Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+    )
+  }
+
+  // Standard vertical layout
   return (
     <Animated.View entering={ZoomIn.springify()} style={styles.wrapper}>
       <View style={[styles.container, { padding: config.containerPadding }]}>
@@ -140,6 +219,42 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     minWidth: 200,
+  },
+  compactContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.base,
+    borderWidth: 1,
+    borderColor: Colors.border.accent,
+    backgroundColor: Colors.surface.default,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  compactBorderGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 60,
+  },
+  compactContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 1,
+    paddingHorizontal: Spacing.sm,
+  },
+  compactIcon: {
+    marginBottom: 0,
+    marginRight: Spacing.md,
+  },
+  compactInfo: {
+    flex: 1,
+  },
+  compactProgress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
   },
   borderGradient: {
     position: 'absolute',

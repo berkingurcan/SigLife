@@ -95,8 +95,8 @@ export function GameFeature() {
         </Animated.View>
 
         {/* Current Stage Card */}
-        <Animated.View entering={FadeInDown.delay(200)} style={styles.section}>
-          <GameStageBadge stageId={gameState.currentStage} size="large" />
+        <Animated.View entering={FadeInDown.delay(200)} style={styles.stageSection}>
+          <GameStageBadge stageId={gameState.currentStage} size="compact" />
           <Animated.Text entering={FadeInDown.delay(350)} style={styles.stageDescription}>
             {currentStage.description}
           </Animated.Text>
@@ -250,6 +250,10 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.md,
+  },
+  stageSection: {
+    gap: Spacing.sm,
+    alignItems: 'stretch',
   },
   sectionHeader: {
     flexDirection: 'row',
