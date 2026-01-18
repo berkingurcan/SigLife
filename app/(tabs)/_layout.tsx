@@ -1,38 +1,41 @@
 import { Tabs } from 'expo-router'
 import React from 'react'
-import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
+import { CustomTabBar } from '@/components/ui/custom-tab-bar'
+import { Colors } from '@/constants/design-system'
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: { display: 'none' }, // Hide default tab bar
+      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
       {/* The index redirects to the game screen */}
       <Tabs.Screen name="index" options={{ tabBarItemStyle: { display: 'none' } }} />
       <Tabs.Screen
         name="game"
         options={{
           title: 'Game',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="gamecontroller.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="account"
         options={{
-          title: 'Account',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="wallet.pass.fill" color={color} />,
+          title: 'Wallet',
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="gearshape.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="demo"
         options={{
           title: 'Demo',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="ladybug.fill" color={color} />,
         }}
       />
     </Tabs>

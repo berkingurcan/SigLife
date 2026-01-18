@@ -1,25 +1,49 @@
 // History Screen - Journey log showing all past events
-import React from 'react'
-import { View, StyleSheet, FlatList } from 'react-native'
-import { useRouter } from 'expo-router'
-import { AppText } from '@/components/app-text'
-import { GameButton } from '@/components/game/game-action-buttons'
-import { useGame } from '@/components/game/game-provider'
-import { GameColors, type HistoryEntry } from '@/constants/game-config'
+// Redesigned with modern 2025-2026 UI/UX trends
 
-function HistoryItem({ entry }: { entry: HistoryEntry }) {
+import React from 'react'
+import { View, StyleSheet, FlatList, Platform } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, { FadeIn, FadeInDown, FadeInRight, SlideInRight } from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
+
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { useGame } from '@/components/game/game-provider'
+import { type HistoryEntry } from '@/constants/game-config'
+import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
+import {
+  PlayIcon,
+  GraduateIcon,
+  MintIcon,
+  HistoryIcon,
+  ResetIcon,
+  StatIcons,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from '@/components/ui/icons'
+
+function HistoryItem({ entry, index }: { entry: HistoryEntry; index: number }) {
   const typeConfig = {
     event: {
-      emoji: '🎲',
-      color: GameColors.primary,
+      Icon: PlayIcon,
+      color: Colors.primary.default,
+      bgColor: Colors.primary.muted,
+      label: 'Event',
     },
     graduation: {
-      emoji: '🎓',
-      color: GameColors.success,
+      Icon: GraduateIcon,
+      color: Colors.success.default,
+      bgColor: Colors.success.muted,
+      label: 'Graduation',
     },
     mint: {
-      emoji: '💎',
-      color: GameColors.warning,
+      Icon: MintIcon,
+      color: Colors.warning.default,
+      bgColor: Colors.warning.muted,
+      label: 'NFT Mint',
     },
   }
 
@@ -35,103 +59,164 @@ function HistoryItem({ entry }: { entry: HistoryEntry }) {
   })
 
   return (
-    <View style={styles.historyItem}>
-      <View style={[styles.typeIndicator, { backgroundColor: config.color }]}>
-        <AppText style={styles.typeEmoji}>{config.emoji}</AppText>
-      </View>
-      <View style={styles.historyContent}>
-        <AppText style={styles.historyTitle}>{entry.title}</AppText>
-        <AppText style={styles.historyDescription}>{entry.description}</AppText>
-        {entry.statChanges && Object.keys(entry.statChanges).length > 0 && (
-          <View style={styles.statChangesRow}>
-            {Object.entries(entry.statChanges).map(([stat, value]) => (
-              <View
-                key={stat}
-                style={[
-                  styles.statChangeBadge,
-                  {
-                    backgroundColor: value > 0 ? GameColors.success + '30' : GameColors.danger + '30',
-                  },
-                ]}
-              >
-                <AppText style={[styles.statChangeText, { color: value > 0 ? GameColors.success : GameColors.danger }]}>
-                  {stat}: {value > 0 ? '+' : ''}
-                  {value}
-                </AppText>
-              </View>
-            ))}
+    <Animated.View entering={SlideInRight.delay(index * 50)}>
+      <Card variant="default" padding="md" style={styles.historyItem}>
+        {/* Type indicator */}
+        <View style={styles.historyHeader}>
+          <View style={[styles.typeIndicator, { backgroundColor: config.bgColor }]}>
+            <config.Icon size={18} color={config.color} />
           </View>
-        )}
-        <AppText style={styles.historyTime}>
-          {dateString} at {timeString}
-        </AppText>
-      </View>
-    </View>
+          <View style={styles.historyMeta}>
+            <Animated.Text style={[styles.typeLabel, { color: config.color }]}>
+              {config.label}
+            </Animated.Text>
+            <Animated.Text style={styles.historyTime}>
+              {dateString} at {timeString}
+            </Animated.Text>
+          </View>
+        </View>
+
+        {/* Content */}
+        <View style={styles.historyContent}>
+          <Animated.Text style={styles.historyTitle}>{entry.title}</Animated.Text>
+          <Animated.Text style={styles.historyDescription}>{entry.description}</Animated.Text>
+
+          {/* Stat changes */}
+          {entry.statChanges && Object.keys(entry.statChanges).length > 0 && (
+            <View style={styles.statChangesRow}>
+              {Object.entries(entry.statChanges).map(([stat, value]) => {
+                const statKey = stat as keyof typeof StatIcons
+                const IconComponent = StatIcons[statKey]
+                const isPositive = value > 0
+                const effectColor = isPositive ? Colors.success.default : Colors.danger.default
+                const bgColor = isPositive ? Colors.success.muted : Colors.danger.muted
+
+                return (
+                  <View key={stat} style={[styles.statChangeBadge, { backgroundColor: bgColor }]}>
+                    {IconComponent && <IconComponent size={12} color={effectColor} />}
+                    <Animated.Text style={[styles.statChangeText, { color: effectColor }]}>
+                      {isPositive ? '+' : ''}{value}
+                    </Animated.Text>
+                  </View>
+                )
+              })}
+            </View>
+          )}
+        </View>
+      </Card>
+    </Animated.View>
   )
 }
 
 export default function HistoryScreen() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const { gameState, resetGame } = useGame()
 
   if (!gameState) {
     return (
-      <View style={styles.container}>
-        <AppText style={styles.loadingText}>Loading...</AppText>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <LinearGradient
+          colors={[Colors.background.secondary, Colors.background.primary]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.loadingContainer}>
+          <Animated.Text style={styles.loadingText}>Loading...</Animated.Text>
+        </View>
       </View>
     )
   }
 
   const reversedHistory = [...gameState.history].reverse()
+  const journeyDays = Math.floor((Date.now() - gameState.createdAt) / (1000 * 60 * 60 * 24))
 
   const handleResetGame = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+    }
     resetGame()
     router.back()
   }
 
   return (
-    <View style={styles.container}>
-      {/* Stats Summary */}
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryStat}>
-            <AppText style={styles.summaryValue}>{gameState.history.length}</AppText>
-            <AppText style={styles.summaryLabel}>Total Events</AppText>
-          </View>
-          <View style={styles.summaryStat}>
-            <AppText style={styles.summaryValue}>{gameState.totalMinted}</AppText>
-            <AppText style={styles.summaryLabel}>NFTs Minted</AppText>
-          </View>
-          <View style={styles.summaryStat}>
-            <AppText style={styles.summaryValue}>
-              {Math.floor((Date.now() - gameState.createdAt) / (1000 * 60 * 60 * 24))}d
-            </AppText>
-            <AppText style={styles.summaryLabel}>Journey Time</AppText>
-          </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <LinearGradient
+        colors={[Colors.background.secondary, Colors.background.primary]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Header */}
+      <Animated.View entering={FadeInDown.delay(100)} style={styles.header}>
+        <View style={styles.headerIconContainer}>
+          <HistoryIcon size={28} color={Colors.primary.default} />
         </View>
-      </View>
+        <Animated.Text style={styles.headerTitle}>Your Journey</Animated.Text>
+      </Animated.View>
+
+      {/* Summary Card */}
+      <Animated.View entering={FadeInDown.delay(200)} style={styles.summaryContainer}>
+        <Card variant="glass" padding="md">
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryStat}>
+              <Animated.Text style={styles.summaryValue}>{gameState.history.length}</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>Events</Animated.Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryStat}>
+              <Animated.Text style={styles.summaryValue}>{gameState.totalMinted}</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>NFTs</Animated.Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryStat}>
+              <Animated.Text style={styles.summaryValue}>{journeyDays}d</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>Journey</Animated.Text>
+            </View>
+          </View>
+        </Card>
+      </Animated.View>
 
       {/* History List */}
       {reversedHistory.length > 0 ? (
         <FlatList
           data={reversedHistory}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <HistoryItem entry={item} />}
-          contentContainerStyle={styles.listContent}
+          renderItem={({ item, index }) => <HistoryItem entry={item} index={index} />}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: TabBar.height + Spacing['3xl'] },
+          ]}
           showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       ) : (
         <View style={styles.emptyContainer}>
-          <AppText style={styles.emptyEmoji}>📜</AppText>
-          <AppText style={styles.emptyTitle}>No History Yet</AppText>
-          <AppText style={styles.emptyText}>Start making decisions to build your journey!</AppText>
+          <Animated.View entering={FadeIn}>
+            <View style={styles.emptyIconContainer}>
+              <HistoryIcon size={56} color={Colors.text.tertiary} />
+            </View>
+          </Animated.View>
+          <Animated.Text entering={FadeInDown.delay(100)} style={styles.emptyTitle}>
+            No History Yet
+          </Animated.Text>
+          <Animated.Text entering={FadeInDown.delay(200)} style={styles.emptyText}>
+            Start making decisions to build your journey!
+          </Animated.Text>
         </View>
       )}
 
       {/* Reset Button */}
-      <View style={styles.resetContainer}>
-        <GameButton title="Start New Game" icon="🔄" onPress={handleResetGame} variant="danger" />
-      </View>
+      <Animated.View
+        entering={FadeInDown.delay(300)}
+        style={[styles.resetContainer, { paddingBottom: TabBar.height + Spacing.lg }]}
+      >
+        <Button
+          title="Start New Game"
+          onPress={handleResetGame}
+          variant="danger"
+          size="lg"
+          icon={<ResetIcon size={20} color={Colors.text.primary} />}
+        />
+      </Animated.View>
     </View>
   )
 }
@@ -139,121 +224,176 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GameColors.background,
+    backgroundColor: Colors.background.primary,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
-    color: GameColors.textSecondary,
-    textAlign: 'center',
-    marginTop: 40,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
   },
-  summaryCard: {
-    backgroundColor: GameColors.surface,
-    margin: 16,
-    marginBottom: 8,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: GameColors.border,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+  },
+  headerIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.base,
+    backgroundColor: Colors.primary.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  headerTitle: {
+    fontSize: Typography.fontSize['2xl'],
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+  },
+  summaryContainer: {
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
   },
   summaryStat: {
     alignItems: 'center',
-  },
-  summaryValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: GameColors.primary,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    color: GameColors.textSecondary,
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 16,
-    paddingTop: 8,
-  },
-  historyItem: {
-    flexDirection: 'row',
-    backgroundColor: GameColors.surface,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: GameColors.border,
-  },
-  typeIndicator: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  typeEmoji: {
-    fontSize: 20,
-  },
-  historyContent: {
     flex: 1,
   },
+  summaryDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: Colors.border.subtle,
+  },
+  summaryValue: {
+    fontSize: Typography.fontSize['2xl'],
+    fontFamily: 'Inter-Bold',
+    color: Colors.primary.default,
+  },
+  summaryLabel: {
+    fontSize: Typography.fontSize.xs,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.tertiary,
+    marginTop: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: Typography.letterSpacing.wide,
+  },
+  listContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+  },
+  separator: {
+    height: Spacing.md,
+  },
+  historyItem: {
+    position: 'relative',
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  typeIndicator: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  historyMeta: {
+    flex: 1,
+  },
+  typeLabel: {
+    fontSize: Typography.fontSize.xs,
+    fontFamily: 'Inter-SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: Typography.letterSpacing.wide,
+  },
+  historyTime: {
+    fontSize: Typography.fontSize.xs,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.tertiary,
+    marginTop: 2,
+  },
+  historyContent: {},
   historyTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: GameColors.textPrimary,
-    marginBottom: 4,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.xs,
   },
   historyDescription: {
-    fontSize: 13,
-    color: GameColors.textSecondary,
-    marginBottom: 8,
-    lineHeight: 18,
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+    lineHeight: Typography.fontSize.sm * Typography.lineHeight.relaxed,
+    marginBottom: Spacing.sm,
   },
   statChangesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 8,
+    gap: Spacing.xs,
   },
   statChangeBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.xs,
+    gap: Spacing.xs,
   },
   statChangeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  historyTime: {
-    fontSize: 11,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    fontFamily: 'Inter-SemiBold',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: Spacing['3xl'],
   },
-  emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+  emptyIconContainer: {
+    width: 112,
+    height: 112,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.surface.default,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border.subtle,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginBottom: 8,
+    fontSize: Typography.fontSize.xl,
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
   },
   emptyText: {
-    fontSize: 14,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
     textAlign: 'center',
   },
   resetContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.background.primary,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.subtle,
+    paddingTop: Spacing.md,
   },
 })

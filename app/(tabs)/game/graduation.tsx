@@ -1,17 +1,35 @@
 // Graduation Screen - Stage completion and NFT minting
+// Redesigned with modern 2025-2026 UI/UX trends
+
 import React, { useState } from 'react'
-import { View, StyleSheet, ScrollView, Alert } from 'react-native'
+import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
-import { AppText } from '@/components/app-text'
-import { GameButton } from '@/components/game/game-action-buttons'
+import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated'
+import * as Haptics from 'expo-haptics'
+
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { GameStageBadge } from '@/components/game/game-stage-badge'
 import { useGame } from '@/components/game/game-provider'
 import { useMintStageNFT } from '@/components/game/use-mint-stage-nft'
-import { GameColors, getStageById, getNextStage, MINT_FEE_SOL } from '@/constants/game-config'
+import { getStageById, getNextStage, MINT_FEE_SOL } from '@/constants/game-config'
+import { Colors, Spacing, BorderRadius, Typography, TabBar, Gradients } from '@/constants/design-system'
+import {
+  CelebrationIcon,
+  MintIcon,
+  CheckIcon,
+  TargetIcon,
+  TrophyIcon,
+  StageIcons,
+  GraduateIcon,
+} from '@/components/ui/icons'
 
 export default function GraduationScreen() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const { account } = useMobileWallet()
   const { gameState, canGraduate, advanceStage, recordMint } = useGame()
   const [hasMinted, setHasMinted] = useState(false)
@@ -22,8 +40,14 @@ export default function GraduationScreen() {
 
   if (!gameState) {
     return (
-      <View style={styles.container}>
-        <AppText style={styles.errorText}>Loading...</AppText>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <LinearGradient
+          colors={[Colors.background.secondary, Colors.background.primary]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.loadingContainer}>
+          <Animated.Text style={styles.loadingText}>Loading...</Animated.Text>
+        </View>
       </View>
     )
   }
@@ -34,8 +58,12 @@ export default function GraduationScreen() {
 
   const handleMintNFT = async () => {
     if (!account?.publicKey) {
-      Alert.alert('Error', 'Please connect your wallet first.')
+      Alert.alert('Wallet Required', 'Please connect your wallet first.')
       return
+    }
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
     }
 
     try {
@@ -46,7 +74,12 @@ export default function GraduationScreen() {
       if (result) {
         await recordMint(gameState.currentStage)
         setHasMinted(true)
-        Alert.alert('Success!', `You've minted your ${currentStage.name} achievement NFT!`, [{ text: 'Awesome!' }])
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+        }
+        Alert.alert('NFT Minted', `Your ${currentStage.name} achievement NFT has been minted!`, [
+          { text: 'Continue' },
+        ])
       }
     } catch (error) {
       Alert.alert('Mint Failed', 'Failed to mint NFT. Please check your wallet balance and try again.')
@@ -54,6 +87,9 @@ export default function GraduationScreen() {
   }
 
   const handleAdvance = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    }
     await advanceStage()
     router.back()
   }
@@ -62,262 +98,422 @@ export default function GraduationScreen() {
     router.back()
   }
 
+  // Not ready state
   if (!canGraduate && !alreadyMinted) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <LinearGradient
+          colors={[Colors.background.secondary, Colors.background.primary]}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.notReadyContainer}>
-          <AppText style={styles.notReadyEmoji}>🎯</AppText>
-          <AppText style={styles.notReadyTitle}>Not Ready Yet</AppText>
-          <AppText style={styles.notReadyText}>
+          <Animated.View entering={ZoomIn}>
+            <View style={styles.notReadyIconContainer}>
+              <TargetIcon size={56} color={Colors.warning.default} />
+            </View>
+          </Animated.View>
+          <Animated.Text entering={FadeInUp.delay(200)} style={styles.notReadyTitle}>
+            Not Ready Yet
+          </Animated.Text>
+          <Animated.Text entering={FadeInUp.delay(300)} style={styles.notReadyText}>
             Keep grinding! You haven't met the requirements for the next stage.
-          </AppText>
-          <GameButton title="Back to Game" onPress={() => router.back()} variant="secondary" />
+          </Animated.Text>
+          <Animated.View entering={FadeInUp.delay(400)} style={styles.notReadyButton}>
+            <Button title="Back to Game" onPress={() => router.back()} variant="secondary" size="lg" />
+          </Animated.View>
         </View>
       </View>
     )
   }
 
+  const NextStageIcon = nextStage ? StageIcons[nextStage.id] : null
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Celebration Header */}
-      <View style={styles.header}>
-        <AppText style={styles.celebrationEmoji}>🎉</AppText>
-        <AppText style={styles.title}>Congratulations!</AppText>
-        <AppText style={styles.subtitle}>You've completed the {currentStage.name} stage</AppText>
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <LinearGradient
+        colors={[Colors.background.secondary, Colors.background.primary]}
+        style={StyleSheet.absoluteFill}
+      />
 
-      {/* Current Stage Badge */}
-      <View style={styles.badgeSection}>
-        <GameStageBadge stageId={currentStage.id} size="large" />
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: TabBar.height + Spacing['2xl'] },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Celebration Header */}
+        <Animated.View entering={FadeInDown.delay(100)} style={styles.header}>
+          <Animated.View entering={ZoomIn.delay(200)}>
+            <View style={styles.celebrationIconContainer}>
+              <CelebrationIcon size={48} color={Colors.warning.default} />
+            </View>
+          </Animated.View>
+          <Animated.Text entering={FadeInDown.delay(300)} style={styles.title}>
+            Congratulations
+          </Animated.Text>
+          <Animated.Text entering={FadeInDown.delay(400)} style={styles.subtitle}>
+            You've completed the {currentStage.name} stage
+          </Animated.Text>
+        </Animated.View>
 
-      {/* NFT Minting Section */}
-      {!alreadyMinted && !hasMinted && (
-        <View style={styles.mintSection}>
-          <AppText style={styles.mintTitle}>Mint Your Achievement</AppText>
-          <AppText style={styles.mintDescription}>
-            Commemorate your {currentStage.name} achievement on the Solana blockchain.
-          </AppText>
-          <View style={styles.feeContainer}>
-            <AppText style={styles.feeLabel}>Mint Fee:</AppText>
-            <AppText style={styles.feeValue}>{MINT_FEE_SOL} SOL</AppText>
-          </View>
-          <GameButton
-            title={`Mint ${currentStage.name} NFT`}
-            icon="💎"
-            onPress={handleMintNFT}
-            variant="primary"
-            loading={mintMutation.isPending}
-            disabled={mintMutation.isPending}
-          />
-          <AppText style={styles.optionalText}>Minting is optional - you can still advance without it.</AppText>
-        </View>
-      )}
+        {/* Current Stage Badge */}
+        <Animated.View entering={FadeInDown.delay(300)} style={styles.badgeSection}>
+          <GameStageBadge stageId={currentStage.id} size="large" showProgress={false} />
+        </Animated.View>
 
-      {/* Already Minted */}
-      {(alreadyMinted || hasMinted) && (
-        <View style={styles.mintedSection}>
-          <AppText style={styles.mintedEmoji}>✅</AppText>
-          <AppText style={styles.mintedText}>{currentStage.name} NFT Minted!</AppText>
-        </View>
-      )}
+        {/* NFT Minting Section */}
+        {!alreadyMinted && !hasMinted && (
+          <Animated.View entering={FadeInDown.delay(500)}>
+            <Card variant="accent" padding="lg" withGlow style={styles.mintSection}>
+              <View style={styles.mintHeader}>
+                <View style={styles.mintIconContainer}>
+                  <MintIcon size={28} color={Colors.primary.default} />
+                </View>
+                <View style={styles.mintTitleContainer}>
+                  <Animated.Text style={styles.mintTitle}>Mint Your Achievement</Animated.Text>
+                  <Animated.Text style={styles.mintSubtitle}>
+                    Commemorate on Solana blockchain
+                  </Animated.Text>
+                </View>
+              </View>
 
-      {/* Next Stage Preview */}
-      {nextStage && (
-        <View style={styles.nextStageSection}>
-          <AppText style={styles.nextStageTitle}>Next Up</AppText>
-          <View style={styles.nextStageCard}>
-            <AppText style={styles.nextStageEmoji}>{nextStage.emoji}</AppText>
-            <AppText style={styles.nextStageName}>{nextStage.name}</AppText>
-            <AppText style={styles.nextStageDescription}>{nextStage.description}</AppText>
-          </View>
-        </View>
-      )}
+              <View style={styles.feeContainer}>
+                <Animated.Text style={styles.feeLabel}>Mint Fee</Animated.Text>
+                <Animated.Text style={styles.feeValue}>{MINT_FEE_SOL} SOL</Animated.Text>
+              </View>
 
-      {/* Actions */}
-      <View style={styles.actionsSection}>
-        {nextStage ? (
-          <GameButton title={`Advance to ${nextStage.name}`} icon="🚀" onPress={handleAdvance} variant="success" />
-        ) : (
-          <View style={styles.finalStageContainer}>
-            <AppText style={styles.finalStageEmoji}>🏆</AppText>
-            <AppText style={styles.finalStageText}>You've reached Sigma Elite! The ultimate grindset achieved.</AppText>
-          </View>
+              <Button
+                title={`Mint ${currentStage.name} NFT`}
+                onPress={handleMintNFT}
+                variant="primary"
+                size="lg"
+                loading={mintMutation.isPending}
+                disabled={mintMutation.isPending}
+                icon={<MintIcon size={20} color={Colors.text.primary} />}
+              />
+
+              <Animated.Text style={styles.optionalText}>
+                Minting is optional - you can still advance without it.
+              </Animated.Text>
+            </Card>
+          </Animated.View>
         )}
-        <GameButton title="Stay at Current Stage" onPress={handleSkip} variant="secondary" />
-      </View>
-    </ScrollView>
+
+        {/* Already Minted */}
+        {(alreadyMinted || hasMinted) && (
+          <Animated.View entering={FadeIn.delay(500)}>
+            <Card variant="success" padding="md">
+              <View style={styles.mintedContent}>
+                <View style={styles.mintedIconContainer}>
+                  <CheckIcon size={32} color={Colors.success.default} />
+                </View>
+                <Animated.Text style={styles.mintedText}>{currentStage.name} NFT Minted</Animated.Text>
+              </View>
+            </Card>
+          </Animated.View>
+        )}
+
+        {/* Next Stage Preview */}
+        {nextStage && (
+          <Animated.View entering={FadeInDown.delay(600)} style={styles.nextStageSection}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIndicator} />
+              <Animated.Text style={styles.sectionTitle}>Next Up</Animated.Text>
+            </View>
+
+            <Card variant="default" padding="lg">
+              <View style={styles.nextStageContent}>
+                <View style={styles.nextStageIconContainer}>
+                  <LinearGradient
+                    colors={Gradients.stage[nextStage.id] || Gradients.primary.colors}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.nextStageGradient}
+                  />
+                  {NextStageIcon && <NextStageIcon size={32} color={Colors.text.primary} />}
+                </View>
+                <View style={styles.nextStageInfo}>
+                  <Animated.Text style={styles.nextStageName}>{nextStage.name}</Animated.Text>
+                  <Animated.Text style={styles.nextStageDescription}>
+                    {nextStage.description}
+                  </Animated.Text>
+                </View>
+              </View>
+            </Card>
+          </Animated.View>
+        )}
+
+        {/* Final Stage */}
+        {!nextStage && (
+          <Animated.View entering={FadeInDown.delay(600)}>
+            <Card variant="accent" padding="lg" withGlow>
+              <View style={styles.finalStageContent}>
+                <View style={styles.trophyContainer}>
+                  <TrophyIcon size={56} color={Colors.warning.default} />
+                </View>
+                <Animated.Text style={styles.finalStageTitle}>Sigma Elite Achieved</Animated.Text>
+                <Animated.Text style={styles.finalStageText}>
+                  Peak performance. Ultimate grindset unlocked.
+                </Animated.Text>
+              </View>
+            </Card>
+          </Animated.View>
+        )}
+
+        {/* Actions */}
+        <Animated.View entering={FadeInUp.delay(700)} style={styles.actionsSection}>
+          {nextStage ? (
+            <Button
+              title={`Advance to ${nextStage.name}`}
+              onPress={handleAdvance}
+              variant="success"
+              size="xl"
+              icon={<GraduateIcon size={22} color={Colors.text.primary} />}
+            />
+          ) : null}
+
+          <Button
+            title="Stay at Current Stage"
+            onPress={handleSkip}
+            variant="secondary"
+            size="lg"
+          />
+        </Animated.View>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GameColors.background,
+    backgroundColor: Colors.background.primary,
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: Spacing.lg,
+    gap: Spacing.lg,
   },
-  errorText: {
-    color: GameColors.danger,
-    textAlign: 'center',
-    marginTop: 40,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
   },
   notReadyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: Spacing['3xl'],
   },
-  notReadyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+  notReadyIconContainer: {
+    width: 112,
+    height: 112,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.warning.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
   notReadyTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginBottom: 8,
+    fontSize: Typography.fontSize['2xl'],
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
   },
   notReadyText: {
-    fontSize: 16,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
+    lineHeight: Typography.fontSize.md * Typography.lineHeight.relaxed,
+  },
+  notReadyButton: {
+    width: '100%',
+    maxWidth: 220,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    paddingTop: Spacing.md,
   },
-  celebrationEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+  celebrationIconContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.warning.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.warning.default,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+    }),
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: GameColors.textPrimary,
+    fontSize: Typography.fontSize['3xl'],
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: GameColors.textSecondary,
-    marginTop: 8,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+    textAlign: 'center',
   },
   badgeSection: {
     alignItems: 'center',
-    marginBottom: 32,
   },
   mintSection: {
-    backgroundColor: GameColors.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: GameColors.primary,
+    gap: Spacing.md,
+  },
+  mintHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  mintIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: BorderRadius.base,
+    backgroundColor: Colors.primary.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  mintTitleContainer: {
+    flex: 1,
   },
   mintTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginBottom: 8,
+    fontSize: Typography.fontSize.lg,
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
   },
-  mintDescription: {
-    fontSize: 14,
-    color: GameColors.textSecondary,
-    marginBottom: 16,
-    lineHeight: 20,
+  mintSubtitle: {
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+    marginTop: Spacing.xs,
   },
   feeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: GameColors.background,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    backgroundColor: Colors.background.primary,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border.subtle,
   },
   feeLabel: {
-    fontSize: 14,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.secondary,
   },
   feeValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: GameColors.primary,
+    fontSize: Typography.fontSize.lg,
+    fontFamily: 'Inter-Bold',
+    color: Colors.primary.default,
   },
   optionalText: {
-    fontSize: 12,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.tertiary,
     textAlign: 'center',
-    marginTop: 12,
   },
-  mintedSection: {
+  mintedContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: GameColors.success + '20',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
+    justifyContent: 'center',
   },
-  mintedEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
+  mintedIconContainer: {
+    marginRight: Spacing.md,
   },
   mintedText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: GameColors.success,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.success.light,
   },
-  nextStageSection: {
-    marginBottom: 24,
-  },
-  nextStageTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: GameColors.textAccent,
-    marginBottom: 12,
-  },
-  nextStageCard: {
-    backgroundColor: GameColors.surface,
-    borderRadius: 12,
-    padding: 16,
+  nextStageSection: {},
+  sectionHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: GameColors.border,
+    marginBottom: Spacing.md,
   },
-  nextStageEmoji: {
-    fontSize: 40,
-    marginBottom: 8,
+  sectionIndicator: {
+    width: 3,
+    height: 16,
+    backgroundColor: Colors.primary.default,
+    borderRadius: 2,
+    marginRight: Spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.text.accent,
+  },
+  nextStageContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  nextStageIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+    overflow: 'hidden',
+  },
+  nextStageGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  nextStageInfo: {
+    flex: 1,
   },
   nextStageName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginBottom: 4,
+    fontSize: Typography.fontSize.lg,
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
   },
   nextStageDescription: {
-    fontSize: 14,
-    color: GameColors.textSecondary,
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
+    marginTop: Spacing.xs,
+    lineHeight: Typography.fontSize.sm * Typography.lineHeight.normal,
+  },
+  finalStageContent: {
+    alignItems: 'center',
+  },
+  trophyContainer: {
+    marginBottom: Spacing.md,
+  },
+  finalStageTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontFamily: 'Inter-Bold',
+    color: Colors.primary.light,
+    marginBottom: Spacing.xs,
+  },
+  finalStageText: {
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Regular',
+    color: Colors.text.secondary,
     textAlign: 'center',
   },
   actionsSection: {
-    gap: 12,
-  },
-  finalStageContainer: {
-    alignItems: 'center',
-    backgroundColor: GameColors.primary + '20',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 12,
-  },
-  finalStageEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
-  },
-  finalStageText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: GameColors.primary,
-    textAlign: 'center',
+    gap: Spacing.md,
   },
 })

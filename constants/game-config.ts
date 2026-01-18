@@ -75,7 +75,8 @@ export interface Stage {
   id: StageId
   name: string
   description: string
-  emoji: string
+  emoji: string // Kept for backward compatibility
+  icon: StageId // Maps to icon component
   index: number
   requirements: StageRequirements
 }
@@ -120,17 +121,18 @@ export interface GameState {
 export interface StatConfig {
   id: StatId
   name: string
-  emoji: string
+  emoji: string // Kept for backward compatibility
+  icon: StatId // Maps to icon component
   color: string
 }
 
 export const STAT_CONFIGS: StatConfig[] = [
-  { id: 'money', name: 'Money', emoji: '💰', color: GameColors.statMoney },
-  { id: 'fitness', name: 'Fitness', emoji: '💪', color: GameColors.statFitness },
-  { id: 'intelligence', name: 'Intelligence', emoji: '🧠', color: GameColors.statIntelligence },
-  { id: 'charisma', name: 'Charisma', emoji: '✨', color: GameColors.statCharisma },
-  { id: 'discipline', name: 'Discipline', emoji: '⚡', color: GameColors.statDiscipline },
-  { id: 'investments', name: 'Investments', emoji: '📈', color: GameColors.statInvestments },
+  { id: 'money', name: 'Money', emoji: '', icon: 'money', color: GameColors.statMoney },
+  { id: 'fitness', name: 'Fitness', emoji: '', icon: 'fitness', color: GameColors.statFitness },
+  { id: 'intelligence', name: 'Intelligence', emoji: '', icon: 'intelligence', color: GameColors.statIntelligence },
+  { id: 'charisma', name: 'Charisma', emoji: '', icon: 'charisma', color: GameColors.statCharisma },
+  { id: 'discipline', name: 'Discipline', emoji: '', icon: 'discipline', color: GameColors.statDiscipline },
+  { id: 'investments', name: 'Investments', emoji: '', icon: 'investments', color: GameColors.statInvestments },
 ]
 
 // ============================================================================
@@ -153,7 +155,8 @@ export const STAGES: Stage[] = [
     id: 'student',
     name: 'Student',
     description: 'Just starting your journey. Time to grind.',
-    emoji: '📚',
+    emoji: '',
+    icon: 'student',
     index: 0,
     requirements: {},
   },
@@ -161,7 +164,8 @@ export const STAGES: Stage[] = [
     id: 'intern',
     name: 'Intern',
     description: 'First taste of the corporate world.',
-    emoji: '☕',
+    emoji: '',
+    icon: 'intern',
     index: 1,
     requirements: {
       intelligence: 30,
@@ -172,7 +176,8 @@ export const STAGES: Stage[] = [
     id: 'employee',
     name: 'Employee',
     description: 'Climbing the corporate ladder.',
-    emoji: '💼',
+    emoji: '',
+    icon: 'employee',
     index: 2,
     requirements: {
       money: 20,
@@ -185,7 +190,8 @@ export const STAGES: Stage[] = [
     id: 'side_hustler',
     name: 'Side Hustler',
     description: 'Building something on the side.',
-    emoji: '🌙',
+    emoji: '',
+    icon: 'side_hustler',
     index: 3,
     requirements: {
       money: 35,
@@ -198,7 +204,8 @@ export const STAGES: Stage[] = [
     id: 'entrepreneur',
     name: 'Entrepreneur',
     description: 'Taking the leap into full-time founder mode.',
-    emoji: '🚀',
+    emoji: '',
+    icon: 'entrepreneur',
     index: 4,
     requirements: {
       money: 50,
@@ -212,7 +219,8 @@ export const STAGES: Stage[] = [
     id: 'ceo',
     name: 'CEO',
     description: 'Leading your empire.',
-    emoji: '👔',
+    emoji: '',
+    icon: 'ceo',
     index: 5,
     requirements: {
       money: 65,
@@ -226,7 +234,8 @@ export const STAGES: Stage[] = [
     id: 'investor',
     name: 'Investor',
     description: 'Your money works harder than you.',
-    emoji: '💎',
+    emoji: '',
+    icon: 'investor',
     index: 6,
     requirements: {
       money: 80,
@@ -239,7 +248,8 @@ export const STAGES: Stage[] = [
     id: 'sigma_elite',
     name: 'Sigma Elite',
     description: 'Peak performance. Ultimate grindset achieved.',
-    emoji: '🐺',
+    emoji: '',
+    icon: 'sigma_elite',
     index: 7,
     requirements: {
       money: 90,

@@ -1,23 +1,35 @@
 // Game Feature - Main game dashboard component
+// Redesigned with modern 2025-2026 UI/UX trends
+
 import React from 'react'
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native'
+import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import { AppText } from '@/components/app-text'
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 import { GameStageBadge } from './game-stage-badge'
 import { GameStatsDisplay } from './game-stats-display'
 import { GameActionButtons } from './game-action-buttons'
 import { useGame } from './game-provider'
-import { GameColors, getStageById } from '@/constants/game-config'
+import { getStageById } from '@/constants/game-config'
+import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
+import { Card } from '@/components/ui/card'
+import { CheckIcon, AlertIcon } from '@/components/ui/icons'
 
 export function GameFeature() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
   const { gameState, isLoading, canGraduate, triggerRandomEvent } = useGame()
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={GameColors.primary} />
-        <AppText style={styles.loadingText}>Loading your journey...</AppText>
+        <ActivityIndicator size="large" color={Colors.primary.default} />
+        <Animated.Text entering={FadeInUp.delay(200)} style={styles.loadingText}>
+          Loading your journey...
+        </Animated.Text>
       </View>
     )
   }
@@ -25,7 +37,9 @@ export function GameFeature() {
   if (!gameState) {
     return (
       <View style={styles.errorContainer}>
-        <AppText style={styles.errorText}>Failed to load game state</AppText>
+        <Animated.Text entering={FadeInUp} style={styles.errorText}>
+          Failed to load game state
+        </Animated.Text>
       </View>
     )
   }
@@ -46,167 +60,277 @@ export function GameFeature() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <AppText style={styles.title}>Sigma Man</AppText>
-        <AppText style={styles.subtitle}>The Grindset Simulator</AppText>
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Background gradient */}
+      <LinearGradient
+        colors={[Colors.background.secondary, Colors.background.primary]}
+        style={StyleSheet.absoluteFill}
+      />
 
-      {/* Current Stage */}
-      <View style={styles.section}>
-        <GameStageBadge stageId={gameState.currentStage} size="large" />
-        <AppText style={styles.stageDescription}>{currentStage.description}</AppText>
-      </View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: TabBar.height + Spacing['2xl'] },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header with Logo */}
+        <Animated.View entering={FadeInDown.delay(100)} style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('@/assets/images/logo.png')}
+              style={styles.logo}
+              contentFit="contain"
+            />
+          </View>
+          <View style={styles.titleContainer}>
+            <Animated.Text entering={FadeInDown.delay(200)} style={styles.title}>
+              SIGMA MAN
+            </Animated.Text>
+            <Animated.Text entering={FadeInDown.delay(300)} style={styles.subtitle}>
+              The Grindset Simulator
+            </Animated.Text>
+          </View>
+        </Animated.View>
 
-      {/* Stats */}
-      <View style={styles.section}>
-        <AppText style={styles.sectionTitle}>Your Stats</AppText>
-        <GameStatsDisplay stats={gameState.stats} />
-      </View>
+        {/* Current Stage Card */}
+        <Animated.View entering={FadeInDown.delay(200)} style={styles.section}>
+          <GameStageBadge stageId={gameState.currentStage} size="large" />
+          <Animated.Text entering={FadeInDown.delay(350)} style={styles.stageDescription}>
+            {currentStage.description}
+          </Animated.Text>
+        </Animated.View>
 
-      {/* Graduation Alert */}
-      {canGraduate && (
-        <View style={styles.graduationAlert}>
-          <AppText style={styles.graduationEmoji}>🎉</AppText>
-          <AppText style={styles.graduationText}>
-            Ready to graduate! You've met the requirements for the next stage.
-          </AppText>
-        </View>
-      )}
+        {/* Stats Section */}
+        <Animated.View entering={FadeInDown.delay(300)} style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIndicator} />
+            <Animated.Text entering={FadeInDown.delay(400)} style={styles.sectionTitle}>
+              Your Stats
+            </Animated.Text>
+          </View>
+          <GameStatsDisplay stats={gameState.stats} />
+        </Animated.View>
 
-      {/* Actions */}
-      <View style={styles.section}>
-        <GameActionButtons
-          onLiveLife={handleLiveLife}
-          onViewHistory={handleViewHistory}
-          canGraduate={canGraduate}
-          onGraduate={handleGraduate}
-        />
-      </View>
+        {/* Graduation Alert */}
+        {canGraduate && (
+          <Animated.View entering={FadeInDown.delay(400)}>
+            <Card variant="success" padding="md" style={styles.graduationAlert}>
+              <View style={styles.alertContent}>
+                <View style={styles.alertIconContainer}>
+                  <CheckIcon size={24} color={Colors.success.default} />
+                </View>
+                <View style={styles.alertTextContainer}>
+                  <Animated.Text style={styles.graduationTitle}>Ready to Advance</Animated.Text>
+                  <Animated.Text style={styles.graduationText}>
+                    You've met the requirements for the next stage.
+                  </Animated.Text>
+                </View>
+              </View>
+            </Card>
+          </Animated.View>
+        )}
 
-      {/* Footer Stats */}
-      <View style={styles.footerStats}>
-        <View style={styles.footerStat}>
-          <AppText style={styles.footerStatValue}>{gameState.history.length}</AppText>
-          <AppText style={styles.footerStatLabel}>Decisions</AppText>
-        </View>
-        <View style={styles.footerStat}>
-          <AppText style={styles.footerStatValue}>{gameState.totalMinted}</AppText>
-          <AppText style={styles.footerStatLabel}>NFTs Minted</AppText>
-        </View>
-        <View style={styles.footerStat}>
-          <AppText style={styles.footerStatValue}>{gameState.mintedStages.length}/8</AppText>
-          <AppText style={styles.footerStatLabel}>Stages Complete</AppText>
-        </View>
-      </View>
-    </ScrollView>
+        {/* Actions */}
+        <Animated.View entering={FadeInDown.delay(500)} style={styles.section}>
+          <GameActionButtons
+            onLiveLife={handleLiveLife}
+            onViewHistory={handleViewHistory}
+            canGraduate={canGraduate}
+            onGraduate={handleGraduate}
+          />
+        </Animated.View>
+
+        {/* Footer Stats */}
+        <Animated.View entering={FadeInDown.delay(600)}>
+          <Card variant="glass" padding="md">
+            <View style={styles.footerStats}>
+              <View style={styles.footerStat}>
+                <Animated.Text style={styles.footerStatValue}>{gameState.history.length}</Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>Decisions</Animated.Text>
+              </View>
+              <View style={styles.footerStatDivider} />
+              <View style={styles.footerStat}>
+                <Animated.Text style={styles.footerStatValue}>{gameState.totalMinted}</Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>NFTs Minted</Animated.Text>
+              </View>
+              <View style={styles.footerStatDivider} />
+              <View style={styles.footerStat}>
+                <Animated.Text style={styles.footerStatValue}>
+                  {gameState.mintedStages.length}/8
+                </Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>Complete</Animated.Text>
+              </View>
+            </View>
+          </Card>
+        </Animated.View>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GameColors.background,
+    backgroundColor: Colors.background.primary,
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: Spacing.lg,
+    gap: Spacing.lg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: GameColors.background,
+    backgroundColor: Colors.background.primary,
   },
   loadingText: {
-    marginTop: 16,
-    color: GameColors.textSecondary,
-    fontSize: 14,
+    marginTop: Spacing.base,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Regular',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: GameColors.background,
+    backgroundColor: Colors.background.primary,
   },
   errorText: {
-    color: GameColors.danger,
-    fontSize: 16,
+    color: Colors.danger.default,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-Medium',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+  },
+  logoContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary.default,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
+  },
+  titleContainer: {
+    alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: GameColors.textPrimary,
+    fontSize: Typography.fontSize['4xl'],
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+    letterSpacing: Typography.letterSpacing.wider,
   },
   subtitle: {
-    fontSize: 14,
-    color: GameColors.textAccent,
-    marginTop: 4,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.accent,
+    marginTop: Spacing.xs,
+    letterSpacing: Typography.letterSpacing.wide,
   },
   section: {
-    marginBottom: 24,
+    gap: Spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionIndicator: {
+    width: 3,
+    height: 18,
+    backgroundColor: Colors.primary.default,
+    borderRadius: 2,
+    marginRight: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginBottom: 12,
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.text.primary,
+    letterSpacing: Typography.letterSpacing.normal,
   },
   stageDescription: {
     textAlign: 'center',
-    color: GameColors.textSecondary,
-    fontSize: 14,
-    marginTop: 12,
+    color: Colors.text.secondary,
+    fontSize: Typography.fontSize.base,
+    fontFamily: 'Inter-Regular',
+    lineHeight: Typography.fontSize.base * Typography.lineHeight.relaxed,
   },
   graduationAlert: {
-    backgroundColor: GameColors.success + '20',
-    borderWidth: 1,
-    borderColor: GameColors.success,
-    borderRadius: 12,
-    padding: 16,
+    marginBottom: Spacing.sm,
+  },
+  alertContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
   },
-  graduationEmoji: {
-    fontSize: 24,
-    marginRight: 12,
+  alertIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.success.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  alertTextContainer: {
+    flex: 1,
+  },
+  graduationTitle: {
+    fontSize: Typography.fontSize.md,
+    fontFamily: 'Inter-SemiBold',
+    color: Colors.success.light,
+    marginBottom: Spacing.xs,
   },
   graduationText: {
-    flex: 1,
-    color: GameColors.success,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: Typography.fontSize.sm,
+    fontFamily: 'Inter-Regular',
+    color: Colors.success.default,
+    lineHeight: Typography.fontSize.sm * Typography.lineHeight.normal,
   },
   footerStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: GameColors.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: GameColors.border,
+    alignItems: 'center',
   },
   footerStat: {
     alignItems: 'center',
+    flex: 1,
+  },
+  footerStatDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: Colors.border.subtle,
   },
   footerStatValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: GameColors.primary,
+    fontSize: Typography.fontSize.xl,
+    fontFamily: 'Inter-Bold',
+    color: Colors.primary.default,
   },
   footerStatLabel: {
-    fontSize: 12,
-    color: GameColors.textSecondary,
-    marginTop: 4,
+    fontSize: Typography.fontSize.xs,
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.tertiary,
+    marginTop: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: Typography.letterSpacing.wide,
   },
 })

@@ -1,8 +1,14 @@
-// Game Stage Badge - Current stage display component
+// Game Stage Badge - Modern stage indicator component
+// Redesigned with 2025-2026 UI trends
+
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
-import { AppText } from '@/components/app-text'
-import { GameColors, STAGES, type StageId } from '@/constants/game-config'
+import { View, StyleSheet, Platform } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated'
+
+import { STAGES, type StageId } from '@/constants/game-config'
+import { Colors, Spacing, BorderRadius, Typography, Gradients } from '@/constants/design-system'
+import { StageIcons } from '@/components/ui/icons'
 
 interface GameStageBadgeProps {
   stageId: StageId
@@ -16,101 +22,217 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
 
   const stageNumber = stage.index + 1
   const totalStages = STAGES.length
+  const IconComponent = StageIcons[stageId]
+  const gradientColors = Gradients.stage[stageId] || Gradients.primary.colors
 
-  const sizeStyles = {
+  const sizeConfig = {
     small: {
-      container: styles.containerSmall,
-      emoji: styles.emojiSmall,
-      name: styles.nameSmall,
-      progress: styles.progressSmall,
+      containerPadding: Spacing.md,
+      iconSize: 28,
+      iconContainerSize: 48,
+      nameSize: Typography.fontSize.sm,
+      progressSize: Typography.fontSize.xs,
     },
     medium: {
-      container: styles.containerMedium,
-      emoji: styles.emojiMedium,
-      name: styles.nameMedium,
-      progress: styles.progressMedium,
+      containerPadding: Spacing.lg,
+      iconSize: 40,
+      iconContainerSize: 72,
+      nameSize: Typography.fontSize.lg,
+      progressSize: Typography.fontSize.sm,
     },
     large: {
-      container: styles.containerLarge,
-      emoji: styles.emojiLarge,
-      name: styles.nameLarge,
-      progress: styles.progressLarge,
+      containerPadding: Spacing.xl,
+      iconSize: 56,
+      iconContainerSize: 96,
+      nameSize: Typography.fontSize['2xl'],
+      progressSize: Typography.fontSize.base,
     },
   }
 
-  const currentSizeStyles = sizeStyles[size]
+  const config = sizeConfig[size]
 
   return (
-    <View style={[styles.container, currentSizeStyles.container]}>
-      <AppText style={currentSizeStyles.emoji}>{stage.emoji}</AppText>
-      <AppText style={currentSizeStyles.name}>{stage.name}</AppText>
-      {showProgress && (
-        <AppText style={currentSizeStyles.progress}>
-          Stage {stageNumber}/{totalStages}
-        </AppText>
-      )}
-    </View>
+    <Animated.View entering={ZoomIn.springify()} style={styles.wrapper}>
+      <View style={[styles.container, { padding: config.containerPadding }]}>
+        {/* Gradient border effect */}
+        <LinearGradient
+          colors={[Colors.glass.border, 'transparent']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.borderGradient}
+        />
+
+        {/* Glass background */}
+        <View style={styles.glassBackground} />
+
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Icon container with gradient */}
+          <Animated.View entering={FadeIn.delay(100)}>
+            <View
+              style={[
+                styles.iconContainer,
+                {
+                  width: config.iconContainerSize,
+                  height: config.iconContainerSize,
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={gradientColors}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconGradient}
+              />
+              <IconComponent size={config.iconSize} color={Colors.text.primary} />
+            </View>
+          </Animated.View>
+
+          {/* Stage name */}
+          <Animated.Text
+            entering={FadeIn.delay(200)}
+            style={[styles.stageName, { fontSize: config.nameSize }]}
+          >
+            {stage.name}
+          </Animated.Text>
+
+          {/* Progress indicator */}
+          {showProgress && (
+            <Animated.View entering={FadeIn.delay(300)} style={styles.progressContainer}>
+              <View style={styles.progressDots}>
+                {STAGES.map((_, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.progressDot,
+                      index < stageNumber && styles.progressDotActive,
+                      index === stage.index && styles.progressDotCurrent,
+                    ]}
+                  />
+                ))}
+              </View>
+              <Animated.Text style={[styles.progressText, { fontSize: config.progressSize }]}>
+                Stage {stageNumber} of {totalStages}
+              </Animated.Text>
+            </Animated.View>
+          )}
+        </View>
+      </View>
+
+      {/* Glow effect */}
+      <View style={[styles.glow, { backgroundColor: gradientColors[0] }]} />
+    </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    alignItems: 'center',
+    position: 'relative',
+  },
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: GameColors.surface,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: GameColors.primary,
-    borderRadius: 16,
+    borderColor: Colors.border.accent,
+    backgroundColor: Colors.surface.default,
+    position: 'relative',
+    overflow: 'hidden',
+    minWidth: 200,
   },
-  containerSmall: {
-    padding: 8,
+  borderGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
   },
-  containerMedium: {
-    padding: 16,
+  glassBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.glass.background,
   },
-  containerLarge: {
-    padding: 24,
+  content: {
+    alignItems: 'center',
+    zIndex: 1,
   },
-  emojiSmall: {
-    fontSize: 24,
+  iconContainer: {
+    borderRadius: BorderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: Spacing.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary.default,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
-  emojiMedium: {
-    fontSize: 40,
+  iconGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: BorderRadius.full,
   },
-  emojiLarge: {
-    fontSize: 64,
+  stageName: {
+    fontFamily: 'Inter-Bold',
+    color: Colors.text.primary,
+    textAlign: 'center',
+    letterSpacing: Typography.letterSpacing.normal,
   },
-  nameSmall: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: GameColors.textPrimary,
-    marginTop: 4,
+  progressContainer: {
+    alignItems: 'center',
+    marginTop: Spacing.md,
   },
-  nameMedium: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginTop: 8,
+  progressDots: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
-  nameLarge: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: GameColors.textPrimary,
-    marginTop: 12,
+  progressDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.border.default,
   },
-  progressSmall: {
-    fontSize: 10,
-    color: GameColors.textSecondary,
-    marginTop: 2,
+  progressDotActive: {
+    backgroundColor: Colors.primary.default,
   },
-  progressMedium: {
-    fontSize: 12,
-    color: GameColors.textSecondary,
-    marginTop: 4,
+  progressDotCurrent: {
+    width: 12,
+    backgroundColor: Colors.primary.light,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary.default,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+      },
+    }),
   },
-  progressLarge: {
-    fontSize: 14,
-    color: GameColors.textSecondary,
-    marginTop: 6,
+  progressText: {
+    fontFamily: 'Inter-Medium',
+    color: Colors.text.tertiary,
+    textTransform: 'uppercase',
+    letterSpacing: Typography.letterSpacing.wide,
+  },
+  glow: {
+    position: 'absolute',
+    bottom: -16,
+    width: '60%',
+    height: 32,
+    borderRadius: BorderRadius.xl,
+    opacity: 0.2,
+    ...Platform.select({
+      ios: {
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 24,
+      },
+    }),
   },
 })
