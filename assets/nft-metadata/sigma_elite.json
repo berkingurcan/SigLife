@@ -1,0 +1,40 @@
+{
+    "name": "SigLife - Sigma Elite Badge",
+    "symbol": "SIGLIFE",
+    "description": "Awarded for completing the Sigma Elite stage in SigLife - The Sigma Man Simulator. Peak performance. Ultimate grindset achieved.",
+    "image": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+    "external_url": "https://siglife.app",
+    "attributes": [
+        {
+            "trait_type": "Stage",
+            "value": "Sigma Elite"
+        },
+        {
+            "trait_type": "Stage Index",
+            "value": 7
+        },
+        {
+            "trait_type": "Rarity",
+            "value": "Legendary"
+        },
+        {
+            "trait_type": "Category",
+            "value": "Achievement Badge"
+        }
+    ],
+    "properties": {
+        "files": [
+            {
+                "uri": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+                "type": "image/png"
+            }
+        ],
+        "category": "image",
+        "creators": [
+            {
+                "address": "CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY",
+                "share": 100
+            }
+        ]
+    }
+}

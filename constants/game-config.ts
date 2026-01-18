@@ -4,7 +4,7 @@
 // TREASURY CONFIGURATION
 // ============================================================================
 export const TREASURY_WALLET = 'CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY'
-export const MINT_FEE_SOL = 0.02 // Mint fee in SOL for NFT minting
+export const MINT_FEE_SOL = 0.01 // Mint fee in SOL for NFT minting
 
 // ============================================================================
 // COLOR PALETTE - Dark Sigma Theme

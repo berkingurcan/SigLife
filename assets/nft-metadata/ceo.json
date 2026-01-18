@@ -1,0 +1,40 @@
+{
+    "name": "SigLife - CEO Badge",
+    "symbol": "SIGLIFE",
+    "description": "Awarded for completing the CEO stage in SigLife - The Sigma Man Simulator. Leading your empire.",
+    "image": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+    "external_url": "https://siglife.app",
+    "attributes": [
+        {
+            "trait_type": "Stage",
+            "value": "CEO"
+        },
+        {
+            "trait_type": "Stage Index",
+            "value": 5
+        },
+        {
+            "trait_type": "Rarity",
+            "value": "Epic"
+        },
+        {
+            "trait_type": "Category",
+            "value": "Achievement Badge"
+        }
+    ],
+    "properties": {
+        "files": [
+            {
+                "uri": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+                "type": "image/png"
+            }
+        ],
+        "category": "image",
+        "creators": [
+            {
+                "address": "CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY",
+                "share": 100
+            }
+        ]
+    }
+}

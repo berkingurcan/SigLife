@@ -1,25 +1,24 @@
 // Account Feature - Wallet dashboard
 // Redesigned with modern 2025-2026 UI/UX trends
 
-import React, { useCallback, useState } from 'react'
-import { View, StyleSheet, ScrollView, RefreshControl, Platform } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
-import { useMobileWallet } from '@wallet-ui/react-native-web3js'
 import { PublicKey } from '@solana/web3.js'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useMobileWallet } from '@wallet-ui/react-native-web3js'
+import { LinearGradient } from 'expo-linear-gradient'
+import React, { useCallback, useState } from 'react'
+import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { AccountUiBalance } from '@/components/account/account-ui-balance'
-import { AccountUiButtons } from './account-ui-buttons'
 import { AccountUiTokenAccounts } from '@/components/account/account-ui-token-accounts'
 import { useGetBalanceInvalidate } from '@/components/account/use-get-balance'
 import { useGetTokenAccountsInvalidate } from '@/components/account/use-get-token-accounts'
 import { WalletUiButtonConnect } from '@/components/solana/wallet-ui-button-connect'
-import { ellipsify } from '@/utils/ellipsify'
-import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
+import { Card } from '@/components/ui/card'
 import { WalletIcon } from '@/components/ui/icons'
+import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
+import { ellipsify } from '@/utils/ellipsify'
+import { AccountUiButtons } from './account-ui-buttons'
 
 export function AccountFeature() {
   const insets = useSafeAreaInsets()
@@ -114,6 +113,15 @@ export function AccountFeature() {
             <Animated.Text style={styles.sectionTitle}>Quick Actions</Animated.Text>
           </View>
           <AccountUiButtons />
+        </Animated.View>
+
+        {/* Badges */}
+        <Animated.View entering={FadeInDown.delay(350)}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIndicator} />
+            <Animated.Text style={styles.sectionTitle}>Badges</Animated.Text>
+          </View>
+          <AccountUiBadges address={account.publicKey} />
         </Animated.View>
 
         {/* Token Accounts */}

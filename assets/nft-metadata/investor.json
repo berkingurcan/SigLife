@@ -1,0 +1,40 @@
+{
+    "name": "SigLife - Investor Badge",
+    "symbol": "SIGLIFE",
+    "description": "Awarded for completing the Investor stage in SigLife - The Sigma Man Simulator. Your money works harder than you.",
+    "image": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+    "external_url": "https://siglife.app",
+    "attributes": [
+        {
+            "trait_type": "Stage",
+            "value": "Investor"
+        },
+        {
+            "trait_type": "Stage Index",
+            "value": 6
+        },
+        {
+            "trait_type": "Rarity",
+            "value": "Epic"
+        },
+        {
+            "trait_type": "Category",
+            "value": "Achievement Badge"
+        }
+    ],
+    "properties": {
+        "files": [
+            {
+                "uri": "https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeiad4aebigj7mid5fi3ksxrxjfpho5btui5zfvavjkgcyuoswyj5xu",
+                "type": "image/png"
+            }
+        ],
+        "category": "image",
+        "creators": [
+            {
+                "address": "CbKsPJZXVbMv2z4meUFWdVmih7zYjcQbLYB2j64pkTVY",
+                "share": 100
+            }
+        ]
+    }
+}
