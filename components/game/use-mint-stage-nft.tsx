@@ -1,10 +1,10 @@
 // Mint Stage NFT Hook - Treasury fee transfer for stage graduation
+import { createTransaction } from '@/components/account/create-transaction'
+import { useGetBalanceInvalidate } from '@/components/account/use-get-balance'
+import { MINT_FEE_SOL, TREASURY_WALLET, type StageId } from '@/constants/game-config'
 import { PublicKey, TransactionSignature } from '@solana/web3.js'
 import { useMutation } from '@tanstack/react-query'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
-import { createTransaction } from '@/components/account/create-transaction'
-import { useGetBalanceInvalidate } from '@/components/account/use-get-balance'
-import { TREASURY_WALLET, MINT_FEE_SOL, type StageId } from '@/constants/game-config'
 
 interface MintStageNFTInput {
   stageId: StageId
@@ -13,6 +13,26 @@ interface MintStageNFTInput {
 interface MintStageNFTResult {
   signature: TransactionSignature
   stageId: StageId
+}
+
+// Custom error class for cancelled transactions
+export class TransactionCancelledError extends Error {
+  constructor() {
+    super('Transaction was cancelled by user')
+    this.name = 'TransactionCancelledError'
+  }
+}
+
+// Helper to detect if an error is a user cancellation
+function isUserCancellation(error: unknown): boolean {
+  if (!error) return false
+  const errorString = String(error)
+  return (
+    errorString.includes('CancellationException') ||
+    errorString.includes('User rejected') ||
+    errorString.includes('cancelled') ||
+    errorString.includes('canceled')
+  )
 }
 
 export function useMintStageNFT({ address }: { address: PublicKey }) {
@@ -26,7 +46,7 @@ export function useMintStageNFT({ address }: { address: PublicKey }) {
 
       try {
         // Validate treasury wallet is configured
-        if (!TREASURY_WALLET || TREASURY_WALLET === 'YOUR_TREASURY_WALLET_ADDRESS_HERE') {
+        if (!TREASURY_WALLET) {
           throw new Error('Treasury wallet not configured. Please set TREASURY_WALLET in game-config.ts')
         }
 
@@ -53,6 +73,11 @@ export function useMintStageNFT({ address }: { address: PublicKey }) {
           stageId: input.stageId,
         }
       } catch (error: unknown) {
+        // Check if user cancelled the transaction
+        if (isUserCancellation(error)) {
+          console.log('User cancelled the transaction')
+          throw new TransactionCancelledError()
+        }
         console.error('Mint stage NFT failed:', error)
         throw error
       }
@@ -65,6 +90,11 @@ export function useMintStageNFT({ address }: { address: PublicKey }) {
       await invalidateBalance()
     },
     onError: (error) => {
+      // Don't log cancellations as errors
+      if (error instanceof TransactionCancelledError) {
+        console.log('Transaction cancelled by user')
+        return
+      }
       console.error(`Mint stage NFT transaction failed: ${error}`)
     },
   })

@@ -82,6 +82,18 @@ export default function GraduationScreen() {
         ])
       }
     } catch (error) {
+      // Check if user cancelled - don't show error in this case
+      const errorName = error instanceof Error ? error.name : ''
+      const errorMessage = String(error)
+
+      if (errorName === 'TransactionCancelledError' ||
+        errorMessage.includes('CancellationException') ||
+        errorMessage.includes('cancelled') ||
+        errorMessage.includes('canceled')) {
+        // User cancelled - just return silently, no error message needed
+        return
+      }
+
       Alert.alert('Mint Failed', 'Failed to mint NFT. Please check your wallet balance and try again.')
     }
   }
