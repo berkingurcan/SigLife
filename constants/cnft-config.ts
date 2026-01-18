@@ -54,16 +54,15 @@ export function getMintFeeForStage(stageId: StageId): number {
 // ============================================================================
 
 export const STAGE_METADATA_URIS: Record<StageId, string> = {
-    // TODO: Replace with actual hosted metadata URIs
-    // Format: "https://arweave.net/<TX_ID>" or "ipfs://<CID>"
-    student: 'https://arweave.net/PLACEHOLDER_STUDENT',
-    intern: 'https://arweave.net/PLACEHOLDER_INTERN',
-    employee: 'https://arweave.net/PLACEHOLDER_EMPLOYEE',
-    side_hustler: 'https://arweave.net/PLACEHOLDER_SIDE_HUSTLER',
-    entrepreneur: 'https://arweave.net/PLACEHOLDER_ENTREPRENEUR',
-    ceo: 'https://arweave.net/PLACEHOLDER_CEO',
-    investor: 'https://arweave.net/PLACEHOLDER_INVESTOR',
-    sigma_elite: 'https://arweave.net/PLACEHOLDER_SIGMA_ELITE',
+    // Hosted on Pinata IPFS
+    student: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/student.json',
+    intern: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/intern.json',
+    employee: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/employee.json',
+    side_hustler: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/side_hustler.json',
+    entrepreneur: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/entrepreneur.json',
+    ceo: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/ceo.json',
+    investor: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/investor.json',
+    sigma_elite: 'https://rose-smoggy-sparrow-317.mypinata.cloud/ipfs/bafybeifzhp5dynix4gvug4p24h5j3niwyffpbkh23kvrpnskyvkhnsae4q/sigma_elite.json',
 }
 
 // ============================================================================

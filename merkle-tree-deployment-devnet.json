@@ -1,11 +1,11 @@
 {
-  "merkleTreeAddress": "5PNLh4KVGNxeLT1BDLn2WK4BSMXQdRMTyrS7XSsqnABZ",
+  "merkleTreeAddress": "5gfVtPXKp6y4vcV7SSyC1FSrUoPb34MZCfNF7GXG7Kyq",
   "treeCreator": "AycUowPWTfWWK1dfia7hBRzJEvtHcCuiAepBLqmc9Jj6",
   "maxDepth": 5,
   "maxBufferSize": 8,
   "capacity": 32,
-  "isPublic": false,
+  "isPublic": true,
   "network": "devnet",
-  "deployedAt": "2026-01-18T21:29:42.365Z",
-  "transactionSignature": "zNNBBIpULIVHSQFQEqWlx1b1ozTRsriQT8J5JqvNEiqOzKWRxJO7gQmDtsCCZhyJJPlxQquAxxp1p6/HKfmvDA=="
+  "deployedAt": "2026-01-18T21:54:17.558Z",
+  "transactionSignature": "IgJkUWkXABCDhi2Nqn19VHifavDYx4dpAfL4wm5Uuee2c8m9xkt7u226MCHaIO13ScNDmdsDqoqrKW6u/rzCBA=="
 }

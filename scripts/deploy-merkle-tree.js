@@ -40,7 +40,7 @@ const MAX_BUFFER_SIZE = 8;
 
 // Set to true to allow anyone to mint from this tree
 // Set to false to require tree authority signature for minting
-const IS_PUBLIC_TREE = false;
+const IS_PUBLIC_TREE = true;
 
 // ============================================================================
 // SCRIPT
