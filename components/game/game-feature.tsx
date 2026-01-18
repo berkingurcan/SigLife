@@ -1,22 +1,22 @@
 // Game Feature - Main game dashboard component
 // Redesigned with modern 2025-2026 UI/UX trends
 
-import React from 'react'
-import { View, StyleSheet, ScrollView, ActivityIndicator, Platform } from 'react-native'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
+import React from 'react'
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, View } from 'react-native'
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { GameStageBadge } from './game-stage-badge'
-import { GameStatsDisplay } from './game-stats-display'
+import { Card } from '@/components/ui/card'
+import { CheckIcon } from '@/components/ui/icons'
+import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
+import { getStageById } from '@/constants/game-config'
 import { GameActionButtons } from './game-action-buttons'
 import { useGame } from './game-provider'
-import { getStageById } from '@/constants/game-config'
-import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
-import { Card } from '@/components/ui/card'
-import { CheckIcon, AlertIcon } from '@/components/ui/icons'
+import { GameStageBadge } from './game-stage-badge'
+import { GameStatsDisplay } from './game-stats-display'
 
 export function GameFeature() {
   const router = useRouter()
@@ -86,10 +86,10 @@ export function GameFeature() {
           </View>
           <View style={styles.titleContainer}>
             <Animated.Text entering={FadeInDown.delay(200)} style={styles.title}>
-              SIGMA MAN
+              SIGLIFE
             </Animated.Text>
             <Animated.Text entering={FadeInDown.delay(300)} style={styles.subtitle}>
-              The Grindset Simulator
+              The Sigma Man Simulator
             </Animated.Text>
           </View>
         </Animated.View>
