@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { CheckIcon, MintIcon, StageIcons } from '@/components/ui/icons'
 import { BorderRadius, Colors, Gradients, Spacing, Typography } from '@/constants/design-system'
 import { type StageId } from '@/constants/game-config'
+import { toUpperCase } from '@/utils/text'
 
 interface NftMintedModalProps {
     visible: boolean
@@ -77,7 +78,7 @@ export function NftMintedModal({ visible, onClose, stageName, stageId }: NftMint
                                 {StageIcon && <StageIcon size={28} color={Colors.text.primary} />}
                             </View>
                             <View style={styles.stageInfo}>
-                                <Animated.Text style={styles.stageLabel}>Achievement Unlocked</Animated.Text>
+                                <Animated.Text style={styles.stageLabel}>{toUpperCase('Achievement Unlocked')}</Animated.Text>
                                 <Animated.Text style={styles.stageName}>{stageName}</Animated.Text>
                             </View>
                         </Animated.View>
@@ -216,7 +217,6 @@ const styles = StyleSheet.create({
         fontSize: Typography.fontSize.xs,
         fontFamily: 'Inter-Medium',
         color: Colors.success.default,
-        textTransform: 'uppercase',
         letterSpacing: Typography.letterSpacing.wide,
     },
     stageName: {

@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card'
 import { WalletIcon } from '@/components/ui/icons'
 import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
 import { ellipsify } from '@/utils/ellipsify'
+import { toUpperCase } from '@/utils/text'
 import { AccountUiButtons } from './account-ui-buttons'
 
 export function AccountFeature() {
@@ -98,7 +99,7 @@ export function AccountFeature() {
             <View style={styles.balanceContent}>
               <AccountUiBalance address={account.publicKey} />
               <View style={styles.addressContainer}>
-                <Animated.Text style={styles.addressLabel}>Address</Animated.Text>
+                <Animated.Text style={styles.addressLabel}>{toUpperCase('Address')}</Animated.Text>
                 <Animated.Text style={styles.addressValue}>
                   {ellipsify(account.publicKey.toString(), 8)}
                 </Animated.Text>
@@ -232,7 +233,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     fontFamily: 'Inter-Medium',
     color: Colors.text.tertiary,
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wide,
     marginBottom: Spacing.xs,
   },

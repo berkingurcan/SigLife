@@ -9,6 +9,7 @@ import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated'
 import { StageIcons } from '@/components/ui/icons'
 import { BorderRadius, Colors, Gradients, Spacing, Typography } from '@/constants/design-system'
 import { STAGES, type StageId } from '@/constants/game-config'
+import { toUpperCase } from '@/utils/text'
 
 interface GameStageBadgeProps {
   stageId: StageId
@@ -118,7 +119,7 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
                     ))}
                   </View>
                   <Animated.Text style={[styles.progressText, { fontSize: config.progressSize }]}>
-                    {stageNumber}/{totalStages}
+                    {toUpperCase(`${stageNumber}/${totalStages}`)}
                   </Animated.Text>
                 </View>
               )}
@@ -191,7 +192,7 @@ export function GameStageBadge({ stageId, size = 'medium', showProgress = true }
                 ))}
               </View>
               <Animated.Text style={[styles.progressText, { fontSize: config.progressSize }]}>
-                Stage {stageNumber} of {totalStages}
+                {toUpperCase(`Stage ${stageNumber} of ${totalStages}`)}
               </Animated.Text>
             </Animated.View>
           )}
@@ -332,7 +333,6 @@ const styles = StyleSheet.create({
   progressText: {
     fontFamily: 'Inter-Medium',
     color: Colors.text.tertiary,
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wide,
   },
   glow: {

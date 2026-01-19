@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/icons'
 import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
 import { type HistoryEntry } from '@/constants/game-config'
+import { toUpperCase } from '@/utils/text'
 
 function HistoryItem({ entry, index }: { entry: HistoryEntry; index: number }) {
   const typeConfig = {
@@ -62,7 +63,7 @@ function HistoryItem({ entry, index }: { entry: HistoryEntry; index: number }) {
           </View>
           <View style={styles.historyMeta}>
             <Animated.Text style={[styles.typeLabel, { color: config.color }]}>
-              {config.label}
+              {toUpperCase(config.label)}
             </Animated.Text>
             <Animated.Text style={styles.historyTime}>
               {dateString} at {timeString}
@@ -144,17 +145,17 @@ export default function HistoryScreen() {
           <View style={styles.summaryRow}>
             <View style={styles.summaryStat}>
               <Animated.Text style={styles.summaryValue}>{gameState.history.length}</Animated.Text>
-              <Animated.Text style={styles.summaryLabel}>Events</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>{toUpperCase('Events')}</Animated.Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryStat}>
               <Animated.Text style={styles.summaryValue}>{gameState.totalMinted}</Animated.Text>
-              <Animated.Text style={styles.summaryLabel}>NFTs</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>{toUpperCase('NFTs')}</Animated.Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryStat}>
               <Animated.Text style={styles.summaryValue}>{journeyDays}d</Animated.Text>
-              <Animated.Text style={styles.summaryLabel}>Journey</Animated.Text>
+              <Animated.Text style={styles.summaryLabel}>{toUpperCase('Journey')}</Animated.Text>
             </View>
           </View>
         </Card>
@@ -255,7 +256,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: Colors.text.tertiary,
     marginTop: Spacing.xs,
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wide,
   },
   listContent: {
@@ -287,7 +287,6 @@ const styles = StyleSheet.create({
   typeLabel: {
     fontSize: Typography.fontSize.xs,
     fontFamily: 'Inter-SemiBold',
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wide,
   },
   historyTime: {

@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card'
 import { CheckIcon } from '@/components/ui/icons'
 import { BorderRadius, Colors, Spacing, TabBar, Typography } from '@/constants/design-system'
 import { getStageById } from '@/constants/game-config'
+import { toUpperCase } from '@/utils/text'
 import { GameActionButtons } from './game-action-buttons'
 import { useGame } from './game-provider'
 import { GameStageBadge } from './game-stage-badge'
@@ -148,19 +149,19 @@ export function GameFeature() {
             <View style={styles.footerStats}>
               <View style={styles.footerStat}>
                 <Animated.Text style={styles.footerStatValue}>{gameState.history.length}</Animated.Text>
-                <Animated.Text style={styles.footerStatLabel}>Decisions</Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>{toUpperCase('Decisions')}</Animated.Text>
               </View>
               <View style={styles.footerStatDivider} />
               <View style={styles.footerStat}>
                 <Animated.Text style={styles.footerStatValue}>{gameState.totalMinted}</Animated.Text>
-                <Animated.Text style={styles.footerStatLabel}>NFTs Minted</Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>{toUpperCase('NFTs Minted')}</Animated.Text>
               </View>
               <View style={styles.footerStatDivider} />
               <View style={styles.footerStat}>
                 <Animated.Text style={styles.footerStatValue}>
                   {gameState.mintedStages.length}/8
                 </Animated.Text>
-                <Animated.Text style={styles.footerStatLabel}>Complete</Animated.Text>
+                <Animated.Text style={styles.footerStatLabel}>{toUpperCase('Complete')}</Animated.Text>
               </View>
             </View>
           </Card>
@@ -334,7 +335,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: Colors.text.tertiary,
     marginTop: Spacing.xs,
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wide,
   },
 })

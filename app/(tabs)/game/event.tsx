@@ -15,6 +15,7 @@ import { useGame } from '@/components/game/game-provider'
 import { type EventChoice } from '@/constants/game-config'
 import { Colors, Spacing, BorderRadius, Typography, TabBar } from '@/constants/design-system'
 import { PlayIcon, SkipIcon, ArrowUpIcon, ArrowDownIcon, StatIcons } from '@/components/ui/icons'
+import { toUpperCase } from '@/utils/text'
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity)
 
@@ -81,7 +82,7 @@ export default function EventScreen() {
         {/* Event Header */}
         <Animated.View entering={FadeInDown.delay(100)} style={styles.header}>
           <View style={styles.eventBadge}>
-            <Animated.Text style={styles.eventBadgeText}>Life Event</Animated.Text>
+            <Animated.Text style={styles.eventBadgeText}>{toUpperCase('Life Event')}</Animated.Text>
           </View>
           <Animated.Text entering={FadeInDown.delay(200)} style={styles.title}>
             {currentEvent.title}
@@ -207,7 +208,6 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     fontFamily: 'Inter-SemiBold',
     color: Colors.primary.light,
-    textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wider,
   },
   title: {

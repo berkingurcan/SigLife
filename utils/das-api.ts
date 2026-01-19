@@ -2,6 +2,7 @@
 // Used to retrieve NFT data from Solana
 
 import { getRpcEndpoint } from '@/constants/nft-config'
+import { toLowerCase } from '@/utils/text'
 
 // ============================================================================
 // TYPES
@@ -163,6 +164,6 @@ export function parseStageFromNFTName(name: string): string | null {
   const match = name.match(/SigLife - (.+) Badge/)
   if (!match) return null
 
-  const stageName = match[1].toLowerCase().replace(/\s+/g, '_')
+  const stageName = toLowerCase(match[1]).replace(/\s+/g, '_')
   return stageName
 }
