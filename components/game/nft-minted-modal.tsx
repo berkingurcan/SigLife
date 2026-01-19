@@ -1,15 +1,34 @@
-// NFT Minted Modal - Professional success modal for NFT minting
-// Designed with 2025-2026 UI trends
+// NFT Minted Modal - Professional success modal with metadata display
+// Features: NFT image, metadata, explorer link, share on X
 
+import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native'
+import * as Linking from 'expo-linking'
+import React, { useCallback, useEffect, useState } from 'react'
+import {
+    ActivityIndicator,
+    Modal,
+    Platform,
+    Pressable,
+    Share,
+    StyleSheet,
+    View,
+} from 'react-native'
 import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated'
 
+import { useCluster } from '@/components/cluster/cluster-provider'
 import { Button } from '@/components/ui/button'
-import { CheckIcon, MintIcon, StageIcons } from '@/components/ui/icons'
+import {
+    CheckIcon,
+    ExternalLinkIcon,
+    ImagePlaceholderIcon,
+    MintIcon,
+    StageIcons,
+    XIcon,
+} from '@/components/ui/icons'
 import { BorderRadius, Colors, Gradients, Spacing, Typography } from '@/constants/design-system'
 import { type StageId } from '@/constants/game-config'
+import { getAssetById, type DASAsset } from '@/utils/das-api'
 import { toUpperCase } from '@/utils/text'
 
 interface NftMintedModalProps {
@@ -17,11 +36,120 @@ interface NftMintedModalProps {
     onClose: () => void
     stageName: string
     stageId: StageId
+    mintAddress?: string | null
+    network?: 'devnet' | 'mainnet-beta'
 }
 
-export function NftMintedModal({ visible, onClose, stageName, stageId }: NftMintedModalProps) {
+interface NFTMetadataState {
+    isLoading: boolean
+    error: string | null
+    data: DASAsset | null
+    imageUrl: string | null
+}
+
+export function NftMintedModal({
+    visible,
+    onClose,
+    stageName,
+    stageId,
+    mintAddress,
+    network = 'devnet',
+}: NftMintedModalProps) {
     const StageIcon = StageIcons[stageId]
     const gradientColors = Gradients.stage[stageId] || Gradients.primary.colors
+    const { getExplorerUrl } = useCluster()
+
+    const [metadata, setMetadata] = useState<NFTMetadataState>({
+        isLoading: false,
+        error: null,
+        data: null,
+        imageUrl: null,
+    })
+
+    // Fetch NFT metadata when modal opens and mint address is available
+    useEffect(() => {
+        if (visible && mintAddress) {
+            fetchNFTMetadata()
+        }
+    }, [visible, mintAddress])
+
+    const fetchNFTMetadata = useCallback(async () => {
+        if (!mintAddress) return
+
+        setMetadata((prev) => ({ ...prev, isLoading: true, error: null }))
+
+        try {
+            // Small delay to allow blockchain to index the NFT
+            await new Promise((resolve) => setTimeout(resolve, 2000))
+
+            const asset = await getAssetById(mintAddress, network)
+
+            if (asset) {
+                const imageUrl =
+                    asset.content?.links?.image ||
+                    asset.content?.metadata?.image ||
+                    null
+
+                setMetadata({
+                    isLoading: false,
+                    error: null,
+                    data: asset,
+                    imageUrl,
+                })
+            } else {
+                setMetadata({
+                    isLoading: false,
+                    error: 'NFT metadata not found yet',
+                    data: null,
+                    imageUrl: null,
+                })
+            }
+        } catch (error) {
+            console.error('Failed to fetch NFT metadata:', error)
+            setMetadata({
+                isLoading: false,
+                error: 'Failed to load NFT data',
+                data: null,
+                imageUrl: null,
+            })
+        }
+    }, [mintAddress, network])
+
+    const handleViewOnExplorer = useCallback(() => {
+        if (!mintAddress) return
+
+        const explorerUrl = getExplorerUrl(`address/${mintAddress}`)
+        Linking.openURL(explorerUrl)
+    }, [mintAddress, getExplorerUrl])
+
+    const handleShareOnX = useCallback(async () => {
+        const explorerUrl = mintAddress
+            ? getExplorerUrl(`address/${mintAddress}`)
+            : ''
+
+        const nftName = metadata.data?.content?.metadata?.name || `${stageName} Badge`
+        const shareText = `I just minted my "${nftName}" NFT on @SigLifeGame! 🎮✨\n\nGrinding to become a Sigma Elite on Solana!\n\n${explorerUrl ? `View on Explorer: ${explorerUrl}` : ''}\n\n#SigLife #Solana #NFT #Web3Gaming`
+
+        // Try native share first for mobile
+        if (Platform.OS !== 'web') {
+            try {
+                await Share.share({
+                    message: shareText,
+                })
+                return
+            } catch (error) {
+                console.log('Native share cancelled or failed:', error)
+            }
+        }
+
+        // Fallback to X web intent
+        const xIntentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+        Linking.openURL(xIntentUrl)
+    }, [mintAddress, stageName, metadata.data, getExplorerUrl])
+
+    const handleRetryFetch = useCallback(() => {
+        fetchNFTMetadata()
+    }, [fetchNFTMetadata])
 
     return (
         <Modal
@@ -57,7 +185,6 @@ export function NftMintedModal({ visible, onClose, stageName, stageId }: NftMint
                                     <CheckIcon size={32} color={Colors.text.primary} />
                                 </View>
                             </View>
-                            {/* Glow ring */}
                             <Animated.View style={styles.glowRing} />
                         </Animated.View>
 
@@ -66,32 +193,108 @@ export function NftMintedModal({ visible, onClose, stageName, stageId }: NftMint
                             NFT Minted!
                         </Animated.Text>
 
-                        {/* Stage badge */}
-                        <Animated.View entering={FadeInDown.delay(400)} style={styles.stageBadge}>
-                            <View style={styles.stageIconContainer}>
-                                <LinearGradient
-                                    colors={gradientColors}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    style={StyleSheet.absoluteFill}
-                                />
-                                {StageIcon && <StageIcon size={28} color={Colors.text.primary} />}
+                        {/* NFT Preview Card */}
+                        <Animated.View entering={FadeInDown.delay(400)} style={styles.nftPreviewCard}>
+                            {/* NFT Image */}
+                            <View style={styles.nftImageContainer}>
+                                {metadata.isLoading ? (
+                                    <View style={styles.imageLoadingContainer}>
+                                        <ActivityIndicator size="small" color={Colors.primary.default} />
+                                        <Animated.Text style={styles.imageLoadingText}>Loading NFT...</Animated.Text>
+                                    </View>
+                                ) : metadata.imageUrl ? (
+                                    <Image
+                                        source={{ uri: metadata.imageUrl }}
+                                        style={styles.nftImage}
+                                        contentFit="cover"
+                                        transition={300}
+                                    />
+                                ) : (
+                                    <View style={styles.imagePlaceholder}>
+                                        <LinearGradient
+                                            colors={gradientColors}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            style={StyleSheet.absoluteFill}
+                                        />
+                                        {StageIcon ? (
+                                            <StageIcon size={48} color={Colors.text.primary} />
+                                        ) : (
+                                            <ImagePlaceholderIcon size={48} color={Colors.text.primary} />
+                                        )}
+                                    </View>
+                                )}
                             </View>
-                            <View style={styles.stageInfo}>
-                                <Animated.Text style={styles.stageLabel}>{toUpperCase('Achievement Unlocked')}</Animated.Text>
-                                <Animated.Text style={styles.stageName}>{stageName}</Animated.Text>
+
+                            {/* NFT Info */}
+                            <View style={styles.nftInfo}>
+                                <View style={styles.nftNameRow}>
+                                    <View style={styles.stageIconSmall}>
+                                        <LinearGradient
+                                            colors={gradientColors}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            style={StyleSheet.absoluteFill}
+                                        />
+                                        {StageIcon && <StageIcon size={16} color={Colors.text.primary} />}
+                                    </View>
+                                    <Animated.Text style={styles.nftName} numberOfLines={1}>
+                                        {metadata.data?.content?.metadata?.name || `${stageName} Badge`}
+                                    </Animated.Text>
+                                </View>
+                                <Animated.Text style={styles.nftCollection}>
+                                    {toUpperCase('SigLife Collection')}
+                                </Animated.Text>
+                                {mintAddress && (
+                                    <Animated.Text style={styles.mintAddressText} numberOfLines={1}>
+                                        {`${mintAddress.slice(0, 8)}...${mintAddress.slice(-8)}`}
+                                    </Animated.Text>
+                                )}
                             </View>
+
+                            {/* Retry button if fetch failed */}
+                            {metadata.error && !metadata.isLoading && (
+                                <Pressable onPress={handleRetryFetch} style={styles.retryButton}>
+                                    <Animated.Text style={styles.retryText}>Tap to retry loading</Animated.Text>
+                                </Pressable>
+                            )}
                         </Animated.View>
 
-                        {/* Description */}
-                        <Animated.Text entering={FadeInDown.delay(500)} style={styles.description}>
-                            Your achievement has been permanently recorded on the Solana blockchain. View it in your wallet!
-                        </Animated.Text>
-
                         {/* Blockchain indicator */}
-                        <Animated.View entering={FadeIn.delay(600)} style={styles.blockchainBadge}>
+                        <Animated.View entering={FadeIn.delay(500)} style={styles.blockchainBadge}>
                             <MintIcon size={14} color={Colors.primary.default} />
-                            <Animated.Text style={styles.blockchainText}>On-chain • Solana</Animated.Text>
+                            <Animated.Text style={styles.blockchainText}>
+                                On-chain • Solana {network === 'devnet' ? 'Devnet' : 'Mainnet'}
+                            </Animated.Text>
+                        </Animated.View>
+
+                        {/* Action Buttons */}
+                        <Animated.View entering={FadeInDown.delay(600)} style={styles.actionButtons}>
+                            {/* View on Explorer */}
+                            {mintAddress && (
+                                <Pressable
+                                    onPress={handleViewOnExplorer}
+                                    style={styles.actionButton}
+                                >
+                                    <View style={styles.actionButtonIcon}>
+                                        <ExternalLinkIcon size={18} color={Colors.info.default} />
+                                    </View>
+                                    <Animated.Text style={styles.actionButtonText}>View on Explorer</Animated.Text>
+                                </Pressable>
+                            )}
+
+                            {/* Share on X */}
+                            <Pressable
+                                onPress={handleShareOnX}
+                                style={[styles.actionButton, styles.actionButtonX]}
+                            >
+                                <View style={[styles.actionButtonIcon, styles.actionButtonIconX]}>
+                                    <XIcon size={16} color={Colors.text.primary} />
+                                </View>
+                                <Animated.Text style={[styles.actionButtonText, styles.actionButtonTextX]}>
+                                    Share on X
+                                </Animated.Text>
+                            </Pressable>
                         </Animated.View>
 
                         {/* Continue button */}
@@ -120,7 +323,7 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         width: '100%',
-        maxWidth: 340,
+        maxWidth: 360,
         borderRadius: BorderRadius.xl,
         borderWidth: 1,
         borderColor: Colors.border.accent,
@@ -155,19 +358,19 @@ const styles = StyleSheet.create({
     },
     successIconWrapper: {
         position: 'relative',
-        marginBottom: Spacing.lg,
+        marginBottom: Spacing.md,
     },
     successIconOuter: {
-        width: 72,
-        height: 72,
+        width: 64,
+        height: 64,
         borderRadius: BorderRadius.full,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
     },
     successIconInner: {
-        width: 64,
-        height: 64,
+        width: 56,
+        height: 56,
         borderRadius: BorderRadius.full,
         backgroundColor: 'rgba(0, 0, 0, 0.2)',
         justifyContent: 'center',
@@ -175,10 +378,10 @@ const styles = StyleSheet.create({
     },
     glowRing: {
         position: 'absolute',
-        top: -8,
-        left: -8,
-        right: -8,
-        bottom: -8,
+        top: -6,
+        left: -6,
+        right: -6,
+        bottom: -6,
         borderRadius: BorderRadius.full,
         borderWidth: 2,
         borderColor: Colors.success.default,
@@ -190,48 +393,85 @@ const styles = StyleSheet.create({
         color: Colors.text.primary,
         marginBottom: Spacing.md,
     },
-    stageBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    nftPreviewCard: {
+        width: '100%',
         backgroundColor: Colors.surface.default,
-        borderRadius: BorderRadius.base,
+        borderRadius: BorderRadius.lg,
         borderWidth: 1,
         borderColor: Colors.border.subtle,
-        padding: Spacing.md,
-        width: '100%',
+        overflow: 'hidden',
         marginBottom: Spacing.md,
     },
-    stageIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: BorderRadius.base,
+    nftImageContainer: {
+        width: '100%',
+        aspectRatio: 1,
+        backgroundColor: Colors.background.tertiary,
+    },
+    imageLoadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: Spacing.sm,
+    },
+    imageLoadingText: {
+        fontSize: Typography.fontSize.xs,
+        fontFamily: 'Inter-Medium',
+        color: Colors.text.tertiary,
+    },
+    nftImage: {
+        width: '100%',
+        height: '100%',
+    },
+    imagePlaceholder: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    nftInfo: {
+        padding: Spacing.md,
+        gap: Spacing.xs,
+    },
+    nftNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+    },
+    stageIconSmall: {
+        width: 24,
+        height: 24,
+        borderRadius: BorderRadius.xs,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
-        marginRight: Spacing.md,
     },
-    stageInfo: {
+    nftName: {
         flex: 1,
+        fontSize: Typography.fontSize.md,
+        fontFamily: 'Inter-SemiBold',
+        color: Colors.text.primary,
     },
-    stageLabel: {
+    nftCollection: {
         fontSize: Typography.fontSize.xs,
         fontFamily: 'Inter-Medium',
-        color: Colors.success.default,
+        color: Colors.text.tertiary,
         letterSpacing: Typography.letterSpacing.wide,
     },
-    stageName: {
-        fontSize: Typography.fontSize.lg,
-        fontFamily: 'Inter-Bold',
-        color: Colors.text.primary,
+    mintAddressText: {
+        fontSize: Typography.fontSize.xs,
+        fontFamily: 'SpaceMono',
+        color: Colors.text.muted,
         marginTop: Spacing.xs,
     },
-    description: {
-        fontSize: Typography.fontSize.sm,
-        fontFamily: 'Inter-Regular',
-        color: Colors.text.secondary,
-        textAlign: 'center',
-        lineHeight: Typography.fontSize.sm * Typography.lineHeight.relaxed,
-        marginBottom: Spacing.md,
+    retryButton: {
+        paddingVertical: Spacing.sm,
+        alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: Colors.border.subtle,
+    },
+    retryText: {
+        fontSize: Typography.fontSize.xs,
+        fontFamily: 'Inter-Medium',
+        color: Colors.primary.default,
     },
     blockchainBadge: {
         flexDirection: 'row',
@@ -240,13 +480,54 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.md,
         paddingVertical: Spacing.sm,
         borderRadius: BorderRadius.full,
-        marginBottom: Spacing.lg,
+        marginBottom: Spacing.md,
         gap: Spacing.xs,
     },
     blockchainText: {
         fontSize: Typography.fontSize.xs,
         fontFamily: 'Inter-Medium',
         color: Colors.primary.light,
+    },
+    actionButtons: {
+        width: '100%',
+        flexDirection: 'row',
+        gap: Spacing.sm,
+        marginBottom: Spacing.md,
+    },
+    actionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: Spacing.xs,
+        paddingVertical: Spacing.md,
+        backgroundColor: Colors.info.muted,
+        borderRadius: BorderRadius.base,
+        borderWidth: 1,
+        borderColor: Colors.info.default,
+    },
+    actionButtonX: {
+        backgroundColor: Colors.surface.default,
+        borderColor: Colors.border.default,
+    },
+    actionButtonIcon: {
+        width: 28,
+        height: 28,
+        borderRadius: BorderRadius.sm,
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionButtonIconX: {
+        backgroundColor: Colors.text.primary,
+    },
+    actionButtonText: {
+        fontSize: Typography.fontSize.sm,
+        fontFamily: 'Inter-SemiBold',
+        color: Colors.info.light,
+    },
+    actionButtonTextX: {
+        color: Colors.text.primary,
     },
     buttonContainer: {
         width: '100%',

@@ -471,6 +471,46 @@ export function ArrowDownIcon({ size = 24, color = Colors.danger.default }: Icon
   )
 }
 
+export function ExternalLinkIcon({ size = 24, color = Colors.text.primary }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M18 13V19C18 19.53 17.79 20.04 17.41 20.41C17.04 20.79 16.53 21 16 21H5C4.47 21 3.96 20.79 3.59 20.41C3.21 20.04 3 19.53 3 19V8C3 7.47 3.21 6.96 3.59 6.59C3.96 6.21 4.47 6 5 6H11" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M15 3H21V9" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M10 14L21 3" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
+export function ShareIcon({ size = 24, color = Colors.text.primary }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="18" cy="5" r="3" stroke={color} strokeWidth="2" fill={`${color}15`} />
+      <Circle cx="6" cy="12" r="3" stroke={color} strokeWidth="2" fill={`${color}15`} />
+      <Circle cx="18" cy="19" r="3" stroke={color} strokeWidth="2" fill={`${color}15`} />
+      <Path d="M8.59 13.51L15.42 17.49" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <Path d="M15.41 6.51L8.59 10.49" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </Svg>
+  )
+}
+
+export function XIcon({ size = 24, color = Colors.text.primary }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" fill={color} />
+    </Svg>
+  )
+}
+
+export function ImagePlaceholderIcon({ size = 24, color = Colors.text.tertiary }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="3" y="3" width="18" height="18" rx="3" stroke={color} strokeWidth="2" />
+      <Circle cx="8.5" cy="8.5" r="1.5" fill={color} />
+      <Path d="M21 15L16 10L5 21" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
 // ============================================================================
 // ICON MAPPING HELPERS
 // ============================================================================

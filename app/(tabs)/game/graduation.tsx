@@ -10,6 +10,8 @@ import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native'
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { useCluster } from '@/components/cluster/cluster-provider'
+import { ClusterNetwork } from '@/components/cluster/cluster-network'
 import { useGame } from '@/components/game/game-provider'
 import { GameStageBadge } from '@/components/game/game-stage-badge'
 import { NftMintedModal } from '@/components/game/nft-minted-modal'
@@ -32,9 +34,15 @@ export default function GraduationScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { account } = useMobileWallet()
+  const { selectedCluster } = useCluster()
   const { gameState, canGraduate, advanceStage, recordMint } = useGame()
   const [hasMinted, setHasMinted] = useState(false)
   const [showMintedModal, setShowMintedModal] = useState(false)
+  const [mintedAddress, setMintedAddress] = useState<string | null>(null)
+
+  // Determine network for DAS API
+  const network: 'devnet' | 'mainnet-beta' =
+    selectedCluster.network === ClusterNetwork.Mainnet ? 'mainnet-beta' : 'devnet'
 
   const mintMutation = useMintStageNFT({
     address: account?.publicKey ?? null!,
@@ -76,6 +84,7 @@ export default function GraduationScreen() {
       if (result) {
         await recordMint(gameState.currentStage)
         setHasMinted(true)
+        setMintedAddress(result.mintAddress)
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         }
@@ -305,6 +314,8 @@ export default function GraduationScreen() {
         onClose={() => setShowMintedModal(false)}
         stageName={currentStage.name}
         stageId={currentStage.id}
+        mintAddress={mintedAddress}
+        network={network}
       />
     </View>
   )
