@@ -9,6 +9,7 @@ import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-na
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { AccountUiBadges } from '@/components/account/account-ui-badges'
 import { AccountUiBalance } from '@/components/account/account-ui-balance'
 import { AccountUiTokenAccounts } from '@/components/account/account-ui-token-accounts'
 import { useGetBalanceInvalidate } from '@/components/account/use-get-balance'

@@ -1,4 +1,4 @@
-// Account UI Badges - Display minted cNFT badges
+// Account UI Badges - Display minted NFT badges
 import { PublicKey } from '@solana/web3.js'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
@@ -8,14 +8,14 @@ import Animated, { FadeInRight } from 'react-native-reanimated'
 import { Card } from '@/components/ui/card'
 import { StageIcons, TrophyIcon } from '@/components/ui/icons'
 import { BorderRadius, Colors, Gradients, Spacing, Typography } from '@/constants/design-system'
-import { useFetchCNFTs, type SigLifeBadge } from '@/hooks/use-fetch-cnfts'
+import { useFetchNFTs, type SigLifeBadge } from '@/hooks/use-fetch-nfts'
 
 interface AccountUiBadgesProps {
     address: PublicKey
 }
 
 export function AccountUiBadges({ address }: AccountUiBadgesProps) {
-    const { badges, isLoading } = useFetchCNFTs({ address })
+    const { badges, isLoading } = useFetchNFTs({ address })
 
     if (isLoading) {
         return (
@@ -42,9 +42,8 @@ export function AccountUiBadges({ address }: AccountUiBadgesProps) {
     }
 
     const handleBadgePress = (badge: SigLifeBadge) => {
-        // Open in XRAY or Solscan
-        // Use XRAY for cNFTs as it has better support
-        const explorerUrl = `https://xray.helius.xyz/token/${badge.assetId}?network=devnet`
+        // Open in Solscan for NFTs
+        const explorerUrl = `https://solscan.io/token/${badge.assetId}?cluster=devnet`
         Linking.openURL(explorerUrl)
     }
 
@@ -91,7 +90,7 @@ function BadgeItem({ badge, index, onPress }: { badge: SigLifeBadge, index: numb
                                 {badge.name}
                             </Animated.Text>
                             <Animated.Text style={styles.badgeType}>
-                                {badge.isCompressed ? 'Compressed NFT' : 'NFT'}
+                                NFT Badge
                             </Animated.Text>
                         </View>
 
