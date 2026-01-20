@@ -1,6 +1,7 @@
 // Graduation Screen - Stage completion and NFT minting
 // Redesigned with modern 2025-2026 UI/UX trends
 
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useMobileWallet } from '@wallet-ui/react-native-web3js'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -10,6 +11,7 @@ import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native'
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { useGetBalance } from '@/components/account/use-get-balance'
 import { useCluster } from '@/components/cluster/cluster-provider'
 import { ClusterNetwork } from '@/components/cluster/cluster-network'
 import { useGame } from '@/components/game/game-provider'
@@ -29,6 +31,7 @@ import {
 } from '@/components/ui/icons'
 import { BorderRadius, Colors, Gradients, Spacing, TabBar, Typography } from '@/constants/design-system'
 import { getNextStage, getStageById } from '@/constants/game-config'
+import { getMintFeeForStage } from '@/constants/nft-config'
 
 export default function GraduationScreen() {
   const router = useRouter()
@@ -45,6 +48,11 @@ export default function GraduationScreen() {
     selectedCluster.network === ClusterNetwork.Mainnet ? 'mainnet-beta' : 'devnet'
 
   const mintMutation = useMintStageNFT({
+    address: account?.publicKey ?? null!,
+  })
+
+  // Get user's balance for pre-mint validation
+  const { data: balance } = useGetBalance({
     address: account?.publicKey ?? null!,
   })
 
@@ -69,6 +77,21 @@ export default function GraduationScreen() {
   const handleMintNFT = async () => {
     if (!account?.publicKey) {
       Alert.alert('Wallet Required', 'Please connect your wallet first.')
+      return
+    }
+
+    // Check balance before opening wallet
+    const mintFee = getMintFeeForStage(gameState.currentStage)
+    const estimatedTxFee = 0.02 // ~0.02 SOL for NFT mint transaction fees
+    const requiredBalance = (mintFee + estimatedTxFee) * LAMPORTS_PER_SOL
+
+    if (balance === undefined || balance < requiredBalance) {
+      const balanceInSol = balance ? (balance / LAMPORTS_PER_SOL).toFixed(4) : '0'
+      const requiredInSol = (mintFee + estimatedTxFee).toFixed(4)
+      Alert.alert(
+        'Insufficient Balance',
+        `You need at least ${requiredInSol} SOL to mint this NFT.\n\nYour balance: ${balanceInSol} SOL\nMint fee: ${mintFee} SOL\nEstimated tx fee: ~${estimatedTxFee} SOL`
+      )
       return
     }
 
