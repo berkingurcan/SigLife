@@ -126,7 +126,7 @@ export async function buildNFTMintTransaction({
   // Get stage metadata
   const metadata = getStageNFTMetadata(stageId)
 
-  // Build the transaction with all instructions
+  // Build the transaction with all instructions (using legacy Transaction for wallet compatibility)
   const transaction = new Transaction()
 
   // 1. Create the mint account
@@ -233,7 +233,7 @@ export async function buildNFTMintTransaction({
     })
   )
 
-  // Set transaction metadata
+  // Set transaction metadata (required for legacy Transaction)
   transaction.recentBlockhash = latestBlockhash.blockhash
   transaction.feePayer = payer
 
