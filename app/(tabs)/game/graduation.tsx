@@ -16,6 +16,7 @@ import { useCluster } from '@/components/cluster/cluster-provider'
 import { ClusterNetwork } from '@/components/cluster/cluster-network'
 import { useGame } from '@/components/game/game-provider'
 import { GameStageBadge } from '@/components/game/game-stage-badge'
+import { InsufficientBalanceModal } from '@/components/game/insufficient-balance-modal'
 import { NftMintedModal } from '@/components/game/nft-minted-modal'
 import { useMintStageNFT } from '@/components/game/use-mint-stage-nft'
 import { Button } from '@/components/ui/button'
@@ -42,6 +43,13 @@ export default function GraduationScreen() {
   const [hasMinted, setHasMinted] = useState(false)
   const [showMintedModal, setShowMintedModal] = useState(false)
   const [mintedAddress, setMintedAddress] = useState<string | null>(null)
+  const [showBalanceModal, setShowBalanceModal] = useState(false)
+  const [balanceDetails, setBalanceDetails] = useState({
+    currentBalance: 0,
+    requiredBalance: 0,
+    mintFee: 0,
+    estimatedTxFee: 0.02,
+  })
 
   // Determine network for DAS API
   const network: 'devnet' | 'mainnet-beta' =
@@ -83,15 +91,18 @@ export default function GraduationScreen() {
     // Check balance before opening wallet
     const mintFee = getMintFeeForStage(gameState.currentStage)
     const estimatedTxFee = 0.02 // ~0.02 SOL for NFT mint transaction fees
-    const requiredBalance = (mintFee + estimatedTxFee) * LAMPORTS_PER_SOL
+    const requiredBalanceLamports = (mintFee + estimatedTxFee) * LAMPORTS_PER_SOL
 
-    if (balance === undefined || balance < requiredBalance) {
-      const balanceInSol = balance ? (balance / LAMPORTS_PER_SOL).toFixed(4) : '0'
-      const requiredInSol = (mintFee + estimatedTxFee).toFixed(4)
-      Alert.alert(
-        'Insufficient Balance',
-        `You need at least ${requiredInSol} SOL to mint this NFT.\n\nYour balance: ${balanceInSol} SOL\nMint fee: ${mintFee} SOL\nEstimated tx fee: ~${estimatedTxFee} SOL`
-      )
+    if (balance === undefined || balance < requiredBalanceLamports) {
+      const currentBalanceSol = balance ? balance / LAMPORTS_PER_SOL : 0
+      const requiredBalanceSol = mintFee + estimatedTxFee
+      setBalanceDetails({
+        currentBalance: currentBalanceSol,
+        requiredBalance: requiredBalanceSol,
+        mintFee,
+        estimatedTxFee,
+      })
+      setShowBalanceModal(true)
       return
     }
 
@@ -339,6 +350,16 @@ export default function GraduationScreen() {
         stageId={currentStage.id}
         mintAddress={mintedAddress}
         network={network}
+      />
+
+      {/* Insufficient Balance Modal */}
+      <InsufficientBalanceModal
+        visible={showBalanceModal}
+        onClose={() => setShowBalanceModal(false)}
+        currentBalance={balanceDetails.currentBalance}
+        requiredBalance={balanceDetails.requiredBalance}
+        mintFee={balanceDetails.mintFee}
+        estimatedTxFee={balanceDetails.estimatedTxFee}
       />
     </View>
   )
